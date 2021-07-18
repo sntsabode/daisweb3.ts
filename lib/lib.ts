@@ -1,9 +1,11 @@
-import { makeDir, makeFile } from './utils'
+import { log, makeDir, makeFile } from './utils'
 import { resolve as pathResolve } from 'path'
 import { DaisConfig } from './files/daisconfig'
 import { IContractImport, IDaisConfig, SupportedProtocol, SupportedProtocolsArray } from './daisconfig'
 import fs from 'fs'
 import { BancorWriter } from './protocols/bancor'
+import { DyDxWriter } from './protocols/dydx'
+import { error_exit } from './index.cli'
 
 class ProtocolFileWriter {
   static readonly instance = new ProtocolFileWriter()
@@ -12,58 +14,56 @@ class ProtocolFileWriter {
   readonly #madeDirs: {
     [protocol in SupportedProtocol]: boolean
   } = (function () {
-    const protocolObject = <{ [protocol in SupportedProtocol]: boolean }>{}
+    const protocolObject = <{ 
+      [protocol in SupportedProtocol]: boolean 
+    }>{}
     for (const protocol of SupportedProtocolsArray)
       protocolObject[protocol] = false
     return protocolObject
   })()
 
-  async main(
+  readonly main = async (
     dir: string,
     contractImports: IContractImport[],
     solver: string
-  ): Promise<void> {
-    await this.#makeBaseDirs(dir)
-    return this.#work(solver, contractImports, dir)
-      .catch(e => { throw e })
-  }
+  ): Promise<string[]> => this.#makeBaseDirs(dir)
+    .then(() => this.#work(
+    solver, contractImports, dir
+  ), e => { throw e })
 
-  #work = async (
+  readonly #work = async (
     solver: string,
     contractImports: IContractImport[],
     dir: string
-  ) => {
-    contractImports.map(ci => {
-      switch(ci.protocol.toUpperCase()) {
-        case 'BANCOR':
-          return this.#bancor(
-            dir, solver, ci
-          )
+  ): Promise<string[]> => Promise.all(contractImports.map(ci => {
+    switch(ci.protocol.toUpperCase()) {
+      case 'BANCOR':
+        return this.#bancor(dir, solver, ci)
+          .catch(e => { return <unknown>error_exit(e) as string })
 
-        case 'DYDX':
+      case 'DYDX':
+        return this.#dydx(dir, solver, ci)
+          .catch(e => { return <unknown>error_exit(e) as string })
 
-        break;
+      case 'KYBER':
+        return ''
 
-        case 'KYBER':
+      case 'ONEINCH':
+        return ''
 
-        break;
+      case 'UNISWAP':
+        return ''
 
-        case 'ONEINCH':
+      default:
+        return ''
+    }
+  }))
 
-        break;
-
-        case 'UNISWAP':
-
-        break;
-      }
-    })
-  }
-
-  #bancor = async (
+  readonly #bancor = async (
     dir: string,
     solver: string,
     ci: IContractImport
-  ) => {
+  ): Promise<string> => {
     // Is promise.all because the libraries dir can also be made
     // here when it's needed
     if (!this.#madeDirs.BANCOR) await Promise.all([
@@ -73,25 +73,44 @@ class ProtocolFileWriter {
       e => { throw e }
     )
 
-    return BancorWriter(solver, ci)
-    .catch(e => { throw e })
+    return BancorWriter(dir, solver, ci)
+      .catch(e => { throw e })
   }
 
-  #makeBaseDirs = async (
+  readonly #dydx = async (
+    dir: string,
+    solver: string,
+    ci: IContractImport
+  ) => {
+    if (!this.#madeDirs.DYDX) await Promise.all([
+      makeDir(pathResolve(dir + '/contracts/interfaces/DyDx')),
+      makeDir(pathResolve(dir + '/contracts/libraries/DyDx'))
+    ]).then(
+      () => this.#madeDirs.DYDX = true,
+      e => { throw e }
+    )
+
+    return DyDxWriter(dir, solver, ci)
+      .catch(e => { throw e })
+  }
+
+  readonly #makeBaseDirs = async (
     dir: string
-  ) => Promise.all([
+  ): Promise<void[]> => Promise.all([
     makeDir(pathResolve(dir + '/contracts/interfaces')),
     makeDir(pathResolve(dir + '/contracts/libraries'))
-  ])
+  ]).catch(e => { throw e })
 }
 
 export async function Assemble(dir: string): Promise<void> {
   const daisconfig = await fetchdaisconfig(dir)
     .catch(e => { throw e })
   
-  ProtocolFileWriter.instance.main(
+  const contractDeps = await ProtocolFileWriter.instance.main(
     dir, daisconfig.contractImports, daisconfig.solversion
   )
+
+  log(contractDeps)
 }
 
 export async function Init(dir: string): Promise<void> {
