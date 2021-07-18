@@ -1,18 +1,18 @@
 import fs from 'fs'
 
-export const purgeDir = async (
-  path: string
-): Promise<void[]> => new Promise((resolve, reject) =>
-  fs.readdir(path, (err, entries) => err ? reject(
-    err
-  ) : resolve(
-    (() => entries.map(
-      entry => fs.rm(entry,
-        err => err ? reject(err) : { }
-      )
-    ))()
-  )
-))
+export const dir = process.cwd()
+
+export const purgeDir = (dir: string): void => {
+  const entries = fs.readdirSync(dir)
+  for (const entry of entries) {
+    fs.rmSync(entry, { 
+      recursive: true,
+      force: true,
+      retryDelay: 1000,
+      maxRetries: 3
+    })
+  }
+}
 
 export const makeFile = async (
   path: string,
