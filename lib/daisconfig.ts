@@ -21,8 +21,16 @@ export interface IDaisConfig {
 }
 
 export type SupportedProtocol =
+  | 'BANCOR'
   | 'DYDX'
-  | 'UNISWAP'
   | 'KYBER'
   | 'ONEINCH'
-  | 'BANCOR'
+  | 'UNISWAP'
+
+export const SupportedProtocolsArray: SupportedProtocol[] = [
+  'BANCOR',
+  'DYDX',
+  'KYBER',
+  'ONEINCH',
+  'UNISWAP'
+]
