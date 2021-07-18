@@ -89,7 +89,8 @@ contract FlashLoan is ICallee {
     DyDxCurrencyMarketIDs[USDC] = 2;
     DyDxCurrencyMarketIDs[DAI] = 3;
   }
-        
+  
+  // Add desired parameters here
   struct CallFuncParam {
     uint256 amount;
     address currency;
@@ -100,10 +101,13 @@ contract FlashLoan is ICallee {
     Account.Info calldata _accountInfo,
     bytes calldata _data
   ) external override {
+    // Parameters encoded in 'flashloan'
     CallFuncParam memory data = abi.decode(_data, (CallFuncParam));
 
+    // Enter your custom logic here
   }
-      
+  
+  // Function meant to be called by the bot
   function flashloan(
     CallFuncParam calldata param
   ) external {
