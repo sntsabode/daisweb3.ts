@@ -2,6 +2,7 @@
 import yargs from 'yargs'
 import { colors, log, purgeDir } from './utils'
 import readline from 'readline'
+import { Assemble, Init } from './lib'
 
 const argv = yargs.option('purge', {
   alias: 'p',
@@ -18,12 +19,8 @@ const argv = yargs.option('purge', {
 
 export const dir = process.cwd()
 
-enum Purge {
-  Y,
-  N
-}
 export async function askBeforePurge(): Promise<boolean> {
-  async function askBeforePurge(): Promise<Purge> {
+  async function askBeforePurge(): Promise<'Y' | 'N'> {
     const read = readline.createInterface(process.stdin)
     return new Promise((resolve, reject) => {
       log.warning('Emptying Directory')
@@ -34,9 +31,9 @@ export async function askBeforePurge(): Promise<boolean> {
         read.close()
 
         if (a === 'Y' || a === 'y' || a === 'yes')
-          resolve(Purge['Y'])
+          resolve('Y')
         if (a === 'N' || a === 'n' || a === 'no')
-          resolve(Purge['N'])
+          resolve('N')
 
         reject('Could not determine answer')
       })
@@ -47,11 +44,11 @@ export async function askBeforePurge(): Promise<boolean> {
     .catch(e => { throw e })
 
   switch(purge) {
-    case Purge['Y']:
+    case 'Y':
       return purgeDir(dir)
         .then(() => true, e => { throw e })
 
-    case Purge['N']:
+    case 'N':
       return false
   }
 }
@@ -70,9 +67,11 @@ export async function error_exit<E>(
       .catch(e => { throw e })
 
   if (argv.init)
-    console.log('init')
+    await Init(dir)
+      .catch(e => { throw e })
 
   if (argv.assemble) 
-    console.log('assemble')
+    await Assemble(dir)
+      .catch(e => { throw e })
 
 })().catch(e => error_exit(e))
