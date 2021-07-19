@@ -1,4 +1,4 @@
-import { colors, log, makeDir, makeFile } from './utils'
+import { colors, log, makeDir, makeFile, untyped } from './utils'
 import { resolve as pathResolve } from 'path'
 import { DaisConfig } from './files/daisconfig'
 import { IContractImport, IDaisConfig, SupportedNetwork, SupportedProtocol, SupportedProtocolsArray } from './daisconfig'
@@ -7,10 +7,30 @@ import { BancorWriter } from './protocols/bancor'
 import { DyDxWriter } from './protocols/dydx'
 import { IABIReturn, IAddressReturn, IWriterReturn } from './protocols/__imports__'
 
+type ProtocolFileWriterAddresses = {
+  [protocol in SupportedProtocol]: {
+    [net in SupportedNetwork]: {
+      ContractName: string
+      Address: string
+    }[]
+  } 
+} & {
+  ERROR: {
+    [net in SupportedNetwork]: {
+      ContractName: string
+      Address: string
+    }[]
+  }
+}
+
 class ProtocolFileWriter {
   static readonly instance = new ProtocolFileWriter()
   private constructor ( ) { /**/ }
 
+  /**
+   * Flags to make sure the same directory isn't tried to be 
+   * made more than once
+   */
   readonly #madeDirs: {
     [protocol in SupportedProtocol]: boolean
   } = (function () {
@@ -22,19 +42,21 @@ class ProtocolFileWriter {
     return protocolObject
   })()
 
-  readonly #addresses: {
-    [protocol in SupportedProtocol]: IAddressReturn[]
-  } & {
-    ERROR: IAddressReturn[]
-  } = (function () {
-    const obj = <
-      { [protocol in SupportedProtocol]: IAddressReturn[] } &
-      { ERROR: IAddressReturn[] }
-    >{}
-
+  /**
+   * An object of arrays holding the addresses for the contracts
+   * written. These addresses are the addresses going to be written
+   * in the `/lib/addresses.ts` file
+   */
+  readonly #addresses: ProtocolFileWriterAddresses = (function () {
+    const obj: ProtocolFileWriterAddresses = <unknown>{} as ProtocolFileWriterAddresses
     for (const protocol of SupportedProtocolsArray)
-      obj[protocol] = []
-    obj.ERROR = []
+      obj[protocol] = {
+        MAINNET: [], KOVAN: [], ROPSTEN: []
+      }
+    obj['ERROR'] = {
+      MAINNET: [], KOVAN: [], ROPSTEN: []
+    }
+
     return obj
   })()
 
@@ -69,14 +91,15 @@ class ProtocolFileWriter {
     contractImports: IContractImport[],
     solver: string,
     net: SupportedNetwork | 'all'
-  ): Promise<string[]> => this.#makeBaseDirs(dir)
+  ): Promise<string[]> => makeBaseDirs(dir)
     .then(() => this.#work(
     solver, contractImports, dir, net
   ), e => { throw e }).then(
     (val) => Promise.all([
-      this.#buildABIFile(dir)
+      this.#buildABIFile(dir),
+      this.#buildAddressesFile(dir)
     ]).then(
-      () => val,
+      () => [...new Set(val)],
       e => { throw e }
     ),
 
@@ -99,9 +122,12 @@ class ProtocolFileWriter {
           ...val.ABIs
         )
   
-        this.#addresses[protocol].push(
-          ...val.Addresses
-        )
+        val.Addresses.forEach(address => {
+          this.#addresses[protocol][address.NET].push({
+            ContractName: address.ContractName,
+            Address: address.Address
+          })
+        })
   
         return val.Pack
       }, e => { throw e })
@@ -118,15 +144,50 @@ class ProtocolFileWriter {
         || protocol === 'ERROR'
       ) continue
       
-      ABIfile += `\nnamespace ${protocol} {`
+      ABIfile += `\nexport const ${protocol}_ABI = {`
       for (const abi of abis)
-        ABIfile += '\n  ' + abi.ABI
+        ABIfile += '\n  ' + abi.ABI + ','
 
       ABIfile += '\n}'
     }
 
-    return makeFile(pathResolve(dir + '/lib/addresses.ts'), ABIfile.trim())
+    return makeFile(pathResolve(dir + '/lib/abis.ts'), ABIfile.trim())
       .catch(e => { throw e })
+  }
+
+  readonly #buildAddressesFile = async (
+    dir: string
+  ) => {
+    let AddressesFile = 'export const Addresses = {'
+    for (const [protocol, networks] of Object.entries(this.#addresses)) {
+      if (protocol === 'ERROR') continue
+      if (
+        this.#addresses[<SupportedProtocol>protocol].MAINNET.length === 0
+        && this.#addresses[<SupportedProtocol>protocol].KOVAN.length === 0
+        && this.#addresses[<SupportedProtocol>protocol].ROPSTEN.length === 0
+      ) continue
+
+      AddressesFile += `\n  ${protocol}: {`
+
+      for (const [net, addresses] of Object.entries(networks)) {
+        if (addresses.length === 0) continue
+        AddressesFile += `\n    ${net}: {`
+
+        for (const address of addresses) {
+          AddressesFile += `\n      ${address.ContractName}: ${address.Address},`
+        }
+
+        AddressesFile += `\n    },`
+      }
+
+      AddressesFile += `\n  },\n`
+    }
+
+    AddressesFile += '\n}'
+
+    return makeFile(pathResolve(
+      dir + '/lib/addresses.ts'
+    ), AddressesFile.trim())
   }
 
   readonly #bancor = async (
@@ -198,16 +259,16 @@ class ProtocolFileWriter {
       }
     }
   }
-
-  readonly #makeBaseDirs = async (
-    dir: string
-  ): Promise<void[]> => Promise.all([
-    makeDir(pathResolve(dir + '/contracts/interfaces')),
-    makeDir(pathResolve(dir + '/contracts/libraries')),
-    makeDir(pathResolve(dir + '/lib')),
-    makeDir(pathResolve(dir + '/migrations'))
-  ]).catch(e => { throw e })
 }
+
+const makeBaseDirs = async (
+  dir: string
+): Promise<void[]> => Promise.all([
+  makeDir(pathResolve(dir + '/contracts/interfaces')),
+  makeDir(pathResolve(dir + '/contracts/libraries')),
+  makeDir(pathResolve(dir + '/lib')),
+  makeDir(pathResolve(dir + '/migrations'))
+]).catch(e => { throw e })
 
 export async function Assemble(dir: string): Promise<void> {
   const daisconfig = await fetchdaisconfig(dir)
