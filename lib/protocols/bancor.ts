@@ -1,4 +1,4 @@
-import { colors, log, makeFile, untyped } from '../utils'
+import { colors, log, makeFile } from '../utils'
 import { resolve as pathResolve } from 'path'
 import { Bancor } from '../files/contracts/__contracts__'
 import { IContractImport, SupportedNetwork } from '../daisconfig'
@@ -69,7 +69,7 @@ const IBancorNetwork = async(
       ContractName: 'ContractRegistry',
       Address: Addresses.BANCOR.ContractRegistry[net]
     }],
-    
+
     ABIs: abi ? [{
       ContractName: 'BancorNetwork',
       ABI: BancorABIs.BancorNetworkABI
@@ -81,10 +81,7 @@ const IBancorNetwork = async(
   e => { throw e }
 )
 
-const Imports: TImports<{
-  ERROR: untyped
-  IBANCORNETWORK: untyped
-}>  = {
+const Imports: TImports<SupportedImport>  = {
   IBANCORNETWORK: IBancorNetwork,
   ERROR: async (d,s,n, p) => {
     log.error(...colors.red(p), 'is not a valid Bancor import')
