@@ -5,7 +5,6 @@ import { IContractImport, IDaisConfig, SupportedProtocol, SupportedProtocolsArra
 import fs from 'fs'
 import { BancorWriter } from './protocols/bancor'
 import { DyDxWriter } from './protocols/dydx'
-import { error_exit } from './index.cli'
 
 class ProtocolFileWriter {
   static readonly instance = new ProtocolFileWriter()
@@ -35,29 +34,11 @@ class ProtocolFileWriter {
     solver: string,
     contractImports: IContractImport[],
     dir: string
-  ): Promise<string[]> => Promise.all(contractImports.map(ci => {
-    switch(ci.protocol.toUpperCase()) {
-      case 'BANCOR':
-        return this.#bancor(dir, solver, ci)
-          .catch(e => { return <unknown>error_exit(e) as string })
-
-      case 'DYDX':
-        return this.#dydx(dir, solver, ci)
-          .catch(e => { return <unknown>error_exit(e) as string })
-
-      case 'KYBER':
-        return ''
-
-      case 'ONEINCH':
-        return ''
-
-      case 'UNISWAP':
-        return ''
-
-      default:
-        return ''
-    }
-  }))
+  ): Promise<string[]> => Promise.all(contractImports.map(
+    ci => this.protocols[ci.protocol](
+      dir, solver, ci
+    ).catch(e => { throw e })
+  ))
 
   readonly #bancor = async (
     dir: string,
@@ -81,7 +62,7 @@ class ProtocolFileWriter {
     dir: string,
     solver: string,
     ci: IContractImport
-  ) => {
+  ): Promise<string> => {
     if (!this.#madeDirs.DYDX) await Promise.all([
       makeDir(pathResolve(dir + '/contracts/interfaces/DyDx')),
       makeDir(pathResolve(dir + '/contracts/libraries/DyDx'))
@@ -92,6 +73,20 @@ class ProtocolFileWriter {
 
     return DyDxWriter(dir, solver, ci)
       .catch(e => { throw e })
+  }
+
+  readonly protocols: {
+    [protocol in SupportedProtocol]: (
+      dir: string,
+      solver: string,
+      ci: IContractImport
+    ) => Promise<string>
+  } = {
+    BANCOR: this.#bancor,
+    DYDX: this.#dydx,
+    KYBER: async (dir, solver, ci) => ``,
+    ONEINCH: async (dir, solver, ci) => ``,
+    UNISWAP: async (dir, solver, ci) => ``
   }
 
   readonly #makeBaseDirs = async (
