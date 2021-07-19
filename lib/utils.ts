@@ -1,4 +1,5 @@
 import fs from 'fs'
+import { createInterface } from 'readline'
 
 export const dir = process.cwd()
 
@@ -11,6 +12,36 @@ export const purgeDir = (dir: string): void => {
       maxRetries: 3
     })
   }
+}
+
+export async function ask(
+  lcb: () => void
+): Promise<'Y' | 'N'> {
+  const read = createInterface(process.stdin)
+  return new Promise((resolve, reject) => {
+    lcb()
+    log.warning('Enter (Y) or (N)')
+    read.question('Are you sure (Y/N)', a => {
+      read.close()
+
+      if (a === 'Y' || a === 'y' || a === 'yes')
+        resolve('Y')
+      if (a === 'N' || a === 'n' || a === 'no')
+        resolve('N')
+
+      reject(`
+        Could not determine answer.
+
+        Please enter ${((): string => {
+          const [Y, y, yes] = colors.green('Y', 'y', 'yes')
+          const [N, n, no, errA] = colors.red('N', 'n', 'no', a)
+          return `${Y} / ${y} / ${yes} or ${N} / ${n} / ${no}
+        
+        You entered ${errA}
+        `
+      })()}`)
+    })
+  })
 }
 
 export const makeFile = async (
