@@ -3,8 +3,7 @@ import fs from 'fs'
 export const dir = process.cwd()
 
 export const purgeDir = (dir: string): void => {
-  const entries = fs.readdirSync(dir)
-  for (const entry of entries) {
+  for (const entry of fs.readdirSync(dir)) {
     fs.rmSync(entry, { 
       recursive: true,
       force: true,
@@ -90,3 +89,6 @@ export const colors = {
 
   reset: '\x1b[0m'
 }
+
+// eslint-disable-next-line
+export type untyped = any
