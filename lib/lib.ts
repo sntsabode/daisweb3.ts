@@ -6,6 +6,8 @@ import fs from 'fs'
 import { BancorWriter } from './protocols/bancor'
 import { DyDxWriter } from './protocols/dydx'
 import { IABIReturn, IWriterReturn } from './protocols/__imports__'
+import { KyberWriter } from './protocols/kyber'
+import { OpenZeppelin } from './files/contracts/__contracts__'
 
 type ProtocolFileWriterAddresses = {
   [protocol in SupportedProtocol]: {
@@ -23,9 +25,42 @@ type ProtocolFileWriterAddresses = {
   }
 }
 
+type ProtocolWriters = {
+  [protocol in SupportedProtocol]: (
+    dir: string,
+    solver: string,
+    net: SupportedNetwork | 'all',
+    ci: IContractImport
+  ) => Promise<IWriterReturn>
+} & {
+  ERROR: (
+    dir: string, solver: string, 
+    net: SupportedNetwork | 'all',
+    ci: IContractImport
+  ) => Promise<IWriterReturn>
+}
+
+/**
+ * This class is responsible for handling the **contractImports** section
+ * of the **.daisconfig** file. It delegates work to the Writer functions which
+ * further delegate the work to the respective functions responsible for writing the
+ * Solidity files. Those functions then return the ABIs and Addresses needed to be written.
+ * Those return values are stored in `#abis` and `#addresses`
+ * 
+ * Once the file Writer promise is resolved the stored abis and addresses
+ * are written to *abi.ts* and *addresses.ts* files in the directory.
+ * 
+ * The process ends with an array of dependencies collected from all the imports made in the 
+ * `contractImports` section of the `.daisconfig` file being returned by `ProtocolFileWriter.main`
+ */
 class ProtocolFileWriter {
   static readonly instance = new ProtocolFileWriter()
   private constructor ( ) { /**/ }
+
+  /**
+   * Flag to make sure IERC20.sol is written only once
+   */
+  #wroteIERC20 = false
 
   /**
    * Flags to make sure the same directory isn't tried to be 
@@ -160,9 +195,9 @@ class ProtocolFileWriter {
   ) => {
     let AddressesFile = 'export const Addresses = {'
     for (const [protocol, networks] of Object.entries(this.#addresses)) {
-      if (protocol === 'ERROR') continue
       if (
-        this.#addresses[<SupportedProtocol>protocol].MAINNET.length === 0
+        protocol === 'ERROR'
+        || this.#addresses[<SupportedProtocol>protocol].MAINNET.length === 0
         && this.#addresses[<SupportedProtocol>protocol].KOVAN.length === 0
         && this.#addresses[<SupportedProtocol>protocol].ROPSTEN.length === 0
       ) continue
@@ -174,7 +209,7 @@ class ProtocolFileWriter {
         AddressesFile += `\n    ${net}: {`
 
         for (const address of addresses) {
-          AddressesFile += `\n      ${address.ContractName}: ${address.Address},`
+          AddressesFile += `\n      ${address.ContractName}: '${address.Address}',`
         }
 
         AddressesFile += `\n    },`
@@ -223,29 +258,53 @@ class ProtocolFileWriter {
       e => { throw e }
     )
 
+    // Temporary
+    //
+    // Make OpenZeppelin a SupportedImport and treat making the directories the
+    // same as with the other protocols
+    if (!this.#wroteIERC20) await (async () => makeFile(pathResolve(
+      dir + '/contracts/interfaces/@OpenZeppelin/IERC20.sol'
+    ), OpenZeppelin.Interfaces.IERC20(solver)).then(
+      () => this.#wroteIERC20 = true,
+      async e => {
+        if (e.code !== 'ENOENT') throw e
+
+        await makeDir(pathResolve(dir + '/contracts/interfaces/@OpenZeppelin'))
+          .catch(e => { throw e })
+
+        return makeFile(pathResolve(
+          dir + '/contracts/interfaces/@OpenZeppelin/IERC20.sol'
+        ), OpenZeppelin.Interfaces.IERC20(solver))
+          .catch(e => { throw e })
+      }
+    )
+    )().catch(e => { throw e })
+
     return DyDxWriter(dir, solver, net, ci)
       .catch(e => { throw e })
   }
 
-  readonly protocols: {
-    readonly [protocol in SupportedProtocol]: (
-      dir: string,
-      solver: string,
-      net: SupportedNetwork | 'all',
-      ci: IContractImport
-    ) => Promise<IWriterReturn>
-  } & {
-    readonly ERROR: (
-      dir: string, solver: string, 
-      net: SupportedNetwork | 'all',
-      ci: IContractImport
-    ) => Promise<IWriterReturn>
-  }= {
+  readonly #kyber = async (
+    dir: string,
+    solver: string,
+    net: SupportedNetwork | 'all',
+    ci: IContractImport
+  ) => {
+    if (!this.#madeDirs.KYBER) await Promise.all([
+      makeDir(pathResolve(dir + '/contracts/interfaces/Kyber'))
+    ]).then(
+      () => this.#madeDirs.KYBER = true,
+      e => { throw e }
+    )
+
+    return KyberWriter(dir, solver, net, ci)
+      .catch(e => { throw e })
+  }
+
+  readonly protocols: ProtocolWriters = {
     BANCOR: this.#bancor,
     DYDX: this.#dydx,
-    KYBER: async (dir, solver, ci) => ({
-      ABIs: [], Addresses: [], Pack: ''
-    }),
+    KYBER: this.#kyber,
     ONEINCH: async (dir, solver, ci) => ({
       ABIs: [], Addresses: [], Pack: ''
     }),
