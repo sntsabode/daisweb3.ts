@@ -1,9 +1,10 @@
 import { colors, log, makeFile, untyped } from '../utils'
 import { resolve as pathResolve } from 'path'
 import { Bancor } from '../files/contracts/__contracts__'
-import { IContractImport } from '../daisconfig'
+import { IContractImport, SupportedNetwork } from '../daisconfig'
 import { NPMPacks } from '../npm-packs'
-import { TImports } from './__imports__'
+import { IIndividualWriterReturn, IWriterReturn, TImports } from './__imports__'
+import { Addresses } from '../addresses'
 
 export type SupportedImport =
   'IBANCORNETWORK' 
@@ -17,17 +18,58 @@ export type SupportedImport =
 export const BancorWriter = async (
   dir: string,
   solver: string,
+  net: SupportedNetwork | 'all',
   ci: IContractImport
-): Promise<string> => Imports[(() => {
+): Promise<IWriterReturn> => Imports[(() => {
   const pack = ci.pack.toUpperCase() as SupportedImport
   if (!Imports[pack])
     return 'ERROR'
   return pack
 })() as SupportedImport | 'ERROR'](
-  dir, solver, ci
+  dir, solver, net, ci.abi, ci.pack
 ).then(
-  () => !ci.omitNpmPack ?
-    NPMPacks.BANCOR.SDK : '',
+  data => ({
+    ...data,
+    Pack: !ci.omitNpmPack ?
+      NPMPacks.BANCOR.SDK : ''
+  }),
+  e => { throw e }
+)
+
+const IBancorNetwork = async(
+  dir: string,
+  solver: string,
+  net: SupportedNetwork | 'all',
+  abi: boolean
+): Promise<IIndividualWriterReturn> => Promise.all([
+  makeFile(pathResolve(
+    dir + '/contracts/interfaces/Bancor/IBancorNetwork.sol'
+  ), Bancor.Interfaces.IBancorNetwork(solver)),
+
+  makeFile(pathResolve(
+    dir + '/contracts/interfaces/Bancor/IContractRegistry.sol'
+  ), Bancor.Interfaces.IContractRegistry(solver))
+]).then(
+  () => ({
+    Addresses: net === 'all' ? [{
+      NET: 'KOVAN',
+      ContractName: 'ContractRegistry',
+      Address: Addresses.BANCOR.ContractRegistry.KOVAN
+    }, {
+      NET: 'ROPSTEN',
+      ContractName: 'ContractRegistry',
+      Address: Addresses.BANCOR.ContractRegistry.ROPSTEN
+    }, {
+      NET: 'MAINNET',
+      ContractName: 'ContactRegistry',
+      Address: Addresses.BANCOR.ContractRegistry.MAINNET
+    }] : [{
+      NET: net,
+      ContractName: 'ContractRegistry',
+      Address: Addresses.BANCOR.ContractRegistry[net]
+    }],
+    ABIs: abi ? [] : []
+  }),
   e => { throw e }
 )
 
@@ -36,23 +78,10 @@ const Imports: TImports<{
   IBANCORNETWORK: untyped
 }>  = {
   IBANCORNETWORK: IBancorNetwork,
-  ERROR: async (d,s, ci) => {
-    log.error(...colors.red(ci.pack), 'is not a valid Bancor import')
-    return []
+  ERROR: async (d,s,n, p) => {
+    log.error(...colors.red(p), 'is not a valid Bancor import')
+    return {
+      Addresses: [], ABIs: []
+    }
   }
-}
-
-async function IBancorNetwork(
-  dir: string,
-  solver: string
-): Promise<void[]> {
-  return Promise.all([
-    makeFile(pathResolve(
-      dir + '/contracts/interfaces/Bancor/IBancorNetwork.sol'
-    ), Bancor.Interfaces.IBancorNetwork(solver)),
-
-    makeFile(pathResolve(
-      dir + '/contracts/interfaces/Bancor/IContractRegistry.sol'
-    ), Bancor.Interfaces.IContractRegistry(solver))
-  ]).catch(e => { throw e })
 }

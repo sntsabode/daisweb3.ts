@@ -1,9 +1,10 @@
-import { IContractImport } from '../daisconfig'
+import { IContractImport, SupportedNetwork } from '../daisconfig'
 import { colors, log, makeFile, untyped } from '../utils'
 import { resolve as pathResolve } from 'path'
 import { DyDx } from '../files/contracts/__contracts__'
 import { NPMPacks } from '../npm-packs'
-import { TImports } from './__imports__'
+import { IIndividualWriterReturn, IWriterReturn, TImports } from './__imports__'
+import { Addresses } from '../addresses'
 
 export type SupportedImport =
   'FLASHLOAN'
@@ -17,17 +18,75 @@ export type SupportedImport =
 export const DyDxWriter = async (
   dir: string,
   solver: string,
+  net: SupportedNetwork | 'all',
   ci: IContractImport
-): Promise<string> => Imports[(() => {
+): Promise<IWriterReturn> => Imports[(() => {
   const pack = ci.pack.toUpperCase() as SupportedImport
   if (!Imports[pack])
     return 'ERROR'
   return pack
 })() as SupportedImport | 'ERROR'](
-  dir, solver, ci
+  dir, solver, net, ci.abi, ci.pack
 ).then(
-  () => !ci.omitNpmPack ?
-    NPMPacks.DYDX.V3Client : '',
+  data => ({
+    ...data,
+    Pack: ci.pack ?
+      NPMPacks.DYDX.V3Client : ''
+  }),
+  e => { throw e }
+)
+
+const Flashloan = async (
+  dir: string,
+  solver: string,
+  net: SupportedNetwork | 'all',
+  abi: boolean
+): Promise<IIndividualWriterReturn> => Promise.all([
+  makeFile(pathResolve(
+    dir + '/contracts/Flashloan.sol'
+  ), DyDx.Libraries.FlashloanBoilerplate(solver)),
+
+  makeFile(pathResolve(
+    dir + '/contracts/interfaces/DyDx/ICallee.sol'
+  ), DyDx.Interfaces.ICallee(solver)),
+
+  makeFile(pathResolve(
+    dir + '/contracts/interfaces/DyDx/ISoloMargin.sol'
+  ), DyDx.Interfaces.ISoloMargin(solver)),
+
+  makeFile(pathResolve(
+    dir + '/contracts/libraries/DyDx/Account.sol'
+  ), DyDx.Libraries.Account(solver)),
+
+  makeFile(pathResolve(
+    dir + '/contracts/libraries/DyDx/Actions.sol'
+  ), DyDx.Libraries.Actions(solver)),
+
+  makeFile(pathResolve(
+    dir + '/contracts/libraries/DyDx/Types.sol'
+  ), DyDx.Libraries.Types(solver))
+]).then(
+  () => ({
+    Addresses: net === 'all' ? [{
+      NET: 'KOVAN',
+      ContractName: 'ISoloMargin',
+      Address: Addresses.DYDX.ISoloMargin.KOVAN
+    }, {
+      NET: 'MAINNET',
+      ContractName: 'ISoloMargin',
+      Address: Addresses.DYDX.ISoloMargin.MAINNET
+    }] : [{
+      NET: net,
+      ContractName: 'ISoloMargin',
+      Address: Addresses.DYDX.ISoloMargin[net]
+    }],
+
+    ABIs: abi ? [{
+      ContractName: 'ISoloMargin',
+      // Find ABI
+      ABI: ''
+    }] : []
+  }),
   e => { throw e }
 )
 
@@ -36,39 +95,8 @@ const Imports: TImports<{
   FLASHLOAN: untyped
 }> = {
   FLASHLOAN: Flashloan,
-  ERROR: async (d,s, ci) => {
-    log.error(...colors.red(ci.pack), 'is not a valid import')
-    return []
+  ERROR: async (d, s, n, p) => {
+    log.error(...colors.red(p), 'is not a valid import')
+    return { Addresses: [], ABIs: [] }
   }
-}
-
-async function Flashloan(
-  dir: string,
-  solver: string
-): Promise<void[]> {
-  return Promise.all([
-    makeFile(pathResolve(
-      dir + '/contracts/Flashloan.sol'
-    ), DyDx.Libraries.FlashloanBoilerplate(solver)),
-
-    makeFile(pathResolve(
-      dir + '/contracts/interfaces/DyDx/ICallee.sol'
-    ), DyDx.Interfaces.ICallee(solver)),
-
-    makeFile(pathResolve(
-      dir + '/contracts/interfaces/DyDx/ISoloMargin.sol'
-    ), DyDx.Interfaces.ISoloMargin(solver)),
-
-    makeFile(pathResolve(
-      dir + '/contracts/libraries/DyDx/Account.sol'
-    ), DyDx.Libraries.Account(solver)),
-
-    makeFile(pathResolve(
-      dir + '/contracts/libraries/DyDx/Actions.sol'
-    ), DyDx.Libraries.Actions(solver)),
-
-    makeFile(pathResolve(
-      dir + '/contracts/libraries/DyDx/Types.sol'
-    ), DyDx.Libraries.Types(solver))
-  ]).catch(e => { throw e })
 }
