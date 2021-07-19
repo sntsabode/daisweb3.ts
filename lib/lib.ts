@@ -1,11 +1,11 @@
-import { colors, log, makeDir, makeFile, untyped } from './utils'
+import { colors, log, makeDir, makeFile } from './utils'
 import { resolve as pathResolve } from 'path'
 import { DaisConfig } from './files/daisconfig'
 import { IContractImport, IDaisConfig, SupportedNetwork, SupportedProtocol, SupportedProtocolsArray } from './daisconfig'
 import fs from 'fs'
 import { BancorWriter } from './protocols/bancor'
 import { DyDxWriter } from './protocols/dydx'
-import { IABIReturn, IAddressReturn, IWriterReturn } from './protocols/__imports__'
+import { IABIReturn, IWriterReturn } from './protocols/__imports__'
 
 type ProtocolFileWriterAddresses = {
   [protocol in SupportedProtocol]: {
