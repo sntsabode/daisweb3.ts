@@ -95,7 +95,7 @@ const Imports: TImports<{
   FLASHLOAN: untyped
 }> = {
   FLASHLOAN: Flashloan,
-  ERROR: async (d, s, n, p) => {
+  ERROR: async (d, s, n, a, p) => {
     log.error(...colors.red(p), 'is not a valid import')
     return { Addresses: [], ABIs: [] }
   }

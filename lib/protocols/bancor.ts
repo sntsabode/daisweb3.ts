@@ -5,6 +5,7 @@ import { IContractImport, SupportedNetwork } from '../daisconfig'
 import { NPMPacks } from '../npm-packs'
 import { IIndividualWriterReturn, IWriterReturn, TImports } from './__imports__'
 import { Addresses } from '../addresses'
+import { Bancor as BancorABIs } from '../files/abis/__abis__'
 
 export type SupportedImport =
   'IBANCORNETWORK' 
@@ -68,7 +69,14 @@ const IBancorNetwork = async(
       ContractName: 'ContractRegistry',
       Address: Addresses.BANCOR.ContractRegistry[net]
     }],
-    ABIs: abi ? [] : []
+    
+    ABIs: abi ? [{
+      ContractName: 'BancorNetwork',
+      ABI: BancorABIs.BancorNetworkABI
+    }, {
+      ContractName: 'ContractRegistry',
+      ABI: BancorABIs.ContractRegistryABI
+    }] : []
   }),
   e => { throw e }
 )
