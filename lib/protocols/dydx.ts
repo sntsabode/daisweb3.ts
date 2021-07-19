@@ -7,7 +7,7 @@ import { IIndividualWriterReturn, IWriterReturn, TImports } from './__imports__'
 import { Addresses } from '../addresses'
 
 export type SupportedImport =
-  'FLASHLOAN'
+  | 'FLASHLOAN'
 
 /**
  * Assumes the `DyDx` directory is already created in the
@@ -71,6 +71,10 @@ const Flashloan = async (
       NET: 'KOVAN',
       ContractName: 'ISoloMargin',
       Address: Addresses.DYDX.ISoloMargin.KOVAN
+    }, {
+      NET: 'ROPSTEN',
+      ContractName: 'ISoloMargin',
+      Address: Addresses.DYDX.ISoloMargin.ROPSTEN
     }, {
       NET: 'MAINNET',
       ContractName: 'ISoloMargin',

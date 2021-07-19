@@ -26,7 +26,7 @@ export const BancorWriter = async (
   if (!Imports[pack])
     return 'ERROR'
   return pack
-})() as SupportedImport | 'ERROR'](
+})()](
   dir, solver, net, ci.abi, ci.pack
 ).then(
   data => ({
