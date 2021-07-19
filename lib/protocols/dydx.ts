@@ -1,5 +1,5 @@
 import { IContractImport, SupportedNetwork } from '../daisconfig'
-import { colors, log, makeFile, untyped } from '../utils'
+import { colors, log, makeFile } from '../utils'
 import { resolve as pathResolve } from 'path'
 import { DyDx } from '../files/contracts/__contracts__'
 import { NPMPacks } from '../npm-packs'
@@ -90,10 +90,7 @@ const Flashloan = async (
   e => { throw e }
 )
 
-const Imports: TImports<{
-  ERROR: untyped
-  FLASHLOAN: untyped
-}> = {
+const Imports: TImports<SupportedImport> = {
   FLASHLOAN: Flashloan,
   ERROR: async (d, s, n, a, p) => {
     log.error(...colors.red(p), 'is not a valid import')
