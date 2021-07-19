@@ -8,7 +8,7 @@ export interface IContractImport {
 
 export interface IDaisConfig {
   readonly solversion: string
-  readonly defaultNet: string
+  readonly defaultNet: SupportedNetwork | 'all'
   readonly eslint: boolean
   readonly git: boolean
   readonly contractWriteDir: string
@@ -19,6 +19,11 @@ export interface IDaisConfig {
   readonly addedDependencies: string[]
   readonly addedDevDependencies: string[]
 }
+
+export type SupportedNetwork =
+  | 'MAINNET'
+  | 'KOVAN'
+  | 'ROPSTEN'
 
 export type SupportedProtocol =
   | 'BANCOR'
