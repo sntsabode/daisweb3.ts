@@ -1,8 +1,9 @@
 import { IContractImport } from '../daisconfig'
-import { colors, log, makeFile } from '../utils'
+import { colors, log, makeFile, untyped } from '../utils'
 import { resolve as pathResolve } from 'path'
 import { DyDx } from '../files/contracts/__contracts__'
 import { NPMPacks } from '../npm-packs'
+import { TImports } from './__imports__'
 
 export type SupportedImport =
   'FLASHLOAN'
@@ -13,23 +14,31 @@ export type SupportedImport =
  * @param pack package being imported
  * @param solver solidity version
  */
-export async function DyDxWriter(
+export const DyDxWriter = async (
   dir: string,
   solver: string,
   ci: IContractImport
-): Promise<string> {
-  switch(ci.pack.toUpperCase() as SupportedImport) {
-    case 'FLASHLOAN':
-      return Flashloan(dir, solver)
-        .then(
-          () => !ci.omitNpmPack ?
-            NPMPacks['DYDX']['V3Client'] : '',
-          e => { throw e }
-        )
+): Promise<string> => Imports[(() => {
+  const pack = ci.pack.toUpperCase() as SupportedImport
+  if (!Imports[pack])
+    return 'ERROR'
+  return pack
+})() as SupportedImport | 'ERROR'](
+  dir, solver, ci
+).then(
+  () => !ci.omitNpmPack ?
+    NPMPacks.DYDX.V3Client : '',
+  e => { throw e }
+)
 
-    default:
-      log.error(ci.pack, 'is not a valid', ...colors.red('DyDx'), 'import')
-      return ''
+const Imports: TImports<{
+  ERROR: untyped
+  FLASHLOAN: untyped
+}> = {
+  FLASHLOAN: Flashloan,
+  ERROR: async (d,s, ci) => {
+    log.error(...colors.red(ci.pack), 'is not a valid import')
+    return []
   }
 }
 

@@ -1,4 +1,4 @@
-import { log, makeDir, makeFile } from './utils'
+import { colors, log, makeDir, makeFile } from './utils'
 import { resolve as pathResolve } from 'path'
 import { DaisConfig } from './files/daisconfig'
 import { IContractImport, IDaisConfig, SupportedProtocol, SupportedProtocolsArray } from './daisconfig'
@@ -35,7 +35,12 @@ class ProtocolFileWriter {
     contractImports: IContractImport[],
     dir: string
   ): Promise<string[]> => Promise.all(contractImports.map(
-    ci => this.protocols[ci.protocol](
+    ci => this.protocols[(() => {
+      const protocol = ci.protocol.toUpperCase() as SupportedProtocol
+      if (!this.protocols[protocol])
+        return 'ERROR' 
+      return protocol
+    })() as SupportedProtocol | 'ERROR'](
       dir, solver, ci
     ).catch(e => { throw e })
   ))
@@ -76,17 +81,25 @@ class ProtocolFileWriter {
   }
 
   readonly protocols: {
-    [protocol in SupportedProtocol]: (
+    readonly [protocol in SupportedProtocol]: (
       dir: string,
       solver: string,
       ci: IContractImport
     ) => Promise<string>
-  } = {
+  } & {
+    readonly ERROR: (
+      dir: string, solver: string, ci: IContractImport
+    ) => Promise<string>
+  }= {
     BANCOR: this.#bancor,
     DYDX: this.#dydx,
     KYBER: async (dir, solver, ci) => ``,
     ONEINCH: async (dir, solver, ci) => ``,
-    UNISWAP: async (dir, solver, ci) => ``
+    UNISWAP: async (dir, solver, ci) => ``,
+    ERROR: async (d,s, ci) => {
+      log.error('---', ...colors.red(ci.protocol), 'is not a supported protocol')
+      return ''
+    }
   }
 
   readonly #makeBaseDirs = async (
