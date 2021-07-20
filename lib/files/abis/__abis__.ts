@@ -6,3 +6,5 @@ import * as OpenZeppelin from './openzeppelin'
 export { OpenZeppelin }
 import * as OneInch from './oneinch'
 export { OneInch }
+import * as Uniswap from './uniswap'
+export { Uniswap }
