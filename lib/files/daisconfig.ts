@@ -11,9 +11,9 @@ export const DaisConfig = `
   "contractImports": [
     {
       "protocol": "UNISWAP",
-      "pack": "V2Router",
+      "pack": "V2Router02",
       "omitNpmPack": true,
-      "abi": false,
+      "abi": true,
       "tsHelpers": true
     },
     {
