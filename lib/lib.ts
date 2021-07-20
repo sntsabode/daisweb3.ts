@@ -10,6 +10,7 @@ import { KyberWriter } from './protocols/kyber'
 import { OpenZeppelin } from './files/contracts/__contracts__'
 import { spawn } from 'node:child_process'
 import { Git } from './files/configs/__configs__'
+import { OneInchWriter } from './protocols/oneinch'
 
 type ProtocolFileWriterAddresses = {
   [protocol in SupportedProtocol]: {
@@ -136,20 +137,23 @@ class ProtocolFileWriter {
    * An object of arrays holding the abis required in the **.daisconfig**
    * file. These abis are the abis going to be used to build the abis
    * file going to be written in `/lib/abis.ts`
+   * 
+   * @todo Duplicate ABIs are written into the abis file if many different
+   * imports depend on the one abi. Fix 
    */
   readonly #abis: {
-    [protocol in SupportedProtocol]: IABIReturn[]
+    [protocol in SupportedProtocol]: Set<IABIReturn>
   } & {
-    ERROR: IABIReturn[]
+    ERROR: Set<IABIReturn>
   } = (function () {
     const obj = <
-      { [protocol in SupportedProtocol]: IABIReturn[] } &
-      { ERROR: IABIReturn[] }
+      { [protocol in SupportedProtocol]: Set<IABIReturn> } &
+      { ERROR: Set<IABIReturn> }
     >{}
 
     for (const protocol of SupportedProtocolsArray)
-      obj[protocol] = []
-    obj.ERROR = []
+      obj[protocol] = new Set()
+    obj.ERROR = new Set()
     return obj
   })()
 
@@ -216,9 +220,11 @@ class ProtocolFileWriter {
       return this.protocols[protocol](
         dir, solver, net, ci
       ).then(val => {
-        this.#abis[protocol].push(
-          ...val.ABIs
-        )
+        val.ABIs.forEach(abi => {
+          this.#abis[protocol].add(
+            abi
+          )
+        })
   
         val.Addresses.forEach(address => {
           this.#addresses[protocol][address.NET].push({
@@ -241,10 +247,12 @@ class ProtocolFileWriter {
   readonly #buildABIFile = async (
     dir: string
   ) => {
+    
+    
     let ABIfile = ''
-    for (const [protocol, abis] of Object.entries(this.#abis)) {
+    for (const [protocol, abis] of Object.entries(this.#abis)) {      
       if (
-        abis.length === 0
+        abis.size === 0
         || protocol === 'ERROR'
       ) continue
       
@@ -386,13 +394,31 @@ class ProtocolFileWriter {
       .catch(e => { throw e })
   }
 
+  readonly #oneinch = async (
+    dir: string,
+    solver: string,
+    net: SupportedNetwork | 'all',
+    ci: IContractImport
+  ): Promise<IWriterReturn> => {
+    if (!this.#madeDirs.ONEINCH) await makeDir(pathResolve(
+      dir + '/contracts/interfaces/OneInch'
+    )).then(
+      () => this.#madeDirs.ONEINCH = true,
+      e => { throw e }
+    )
+
+    this.#writeIERC20(dir, solver)
+      .catch(e => { throw e })
+
+    return OneInchWriter(dir, solver, net, ci)
+      .catch(e => { throw e })
+  }
+
   readonly protocols: ProtocolWriters = {
     BANCOR: this.#bancor,
     DYDX: this.#dydx,
     KYBER: this.#kyber,
-    ONEINCH: async (dir, solver, ci) => ({
-      ABIs: [], Addresses: [], Pack: ''
-    }),
+    ONEINCH: this.#oneinch,
     UNISWAP: async (dir, solver, ci) => ({
       ABIs: [], Addresses: [], Pack: ''
     }),
