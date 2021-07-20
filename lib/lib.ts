@@ -8,6 +8,8 @@ import { DyDxWriter } from './protocols/dydx'
 import { IABIReturn, IWriterReturn } from './protocols/__imports__'
 import { KyberWriter } from './protocols/kyber'
 import { OpenZeppelin } from './files/contracts/__contracts__'
+import { spawn } from 'node:child_process'
+import { Git } from './files/configs/__configs__'
 
 type ProtocolFileWriterAddresses = {
   [protocol in SupportedProtocol]: {
@@ -25,20 +27,44 @@ type ProtocolFileWriterAddresses = {
   }
 }
 
+type ProtocolWriterFunc = (
+  dir: string,
+  solver: string,
+  net: SupportedNetwork | 'all',
+  ci: IContractImport
+) => Promise<IWriterReturn>
+
 type ProtocolWriters = {
-  [protocol in SupportedProtocol]: (
-    dir: string,
-    solver: string,
-    net: SupportedNetwork | 'all',
-    ci: IContractImport
-  ) => Promise<IWriterReturn>
+  [protocol in SupportedProtocol]: ProtocolWriterFunc
 } & {
-  ERROR: (
-    dir: string, solver: string, 
-    net: SupportedNetwork | 'all',
-    ci: IContractImport
-  ) => Promise<IWriterReturn>
+  ERROR: ProtocolWriterFunc
 }
+
+
+/**
+ * Temporary
+ *
+ * Make OpenZeppelin a SupportedImport and treat making the directories the
+ * same as with the other protocols
+ */
+const WriteIERC20 = async (
+  dir: string,
+  solver: string
+) => makeFile(pathResolve(
+  dir + '/contracts/interfaces/@OpenZeppelin/IERC20.sol'
+), OpenZeppelin.Interfaces.IERC20(solver)).catch(
+  async e => {
+    if (e.code !== 'ENOENT') throw e
+
+    await makeDir(pathResolve(dir + '/contracts/interfaces/@OpenZeppelin'))
+      .catch(e => { throw e })
+
+    return makeFile(pathResolve(
+      dir + '/contracts/interfaces/@OpenZeppelin/IERC20.sol'
+    ), OpenZeppelin.Interfaces.IERC20(solver))
+      .catch(e => { throw e })
+  }
+)
 
 /**
  * This class is responsible for handling the **contractImports** section
@@ -61,6 +87,17 @@ class ProtocolFileWriter {
    * Flag to make sure IERC20.sol is written only once
    */
   #wroteIERC20 = false
+  readonly #writeIERC20 = async (
+    dir: string,
+    solver: string
+  ) => {
+    if (!this.#wroteIERC20) await WriteIERC20(
+      dir, solver
+    ).then(
+      () => this.#wroteIERC20 = true,
+      e => { throw e }
+    )
+  }
 
   /**
    * Flags to make sure the same directory isn't tried to be 
@@ -95,6 +132,11 @@ class ProtocolFileWriter {
     return obj
   })()
 
+  /**
+   * An object of arrays holding the abis required in the **.daisconfig**
+   * file. These abis are the abis going to be used to build the abis
+   * file going to be written in `/lib/abis.ts`
+   */
   readonly #abis: {
     [protocol in SupportedProtocol]: IABIReturn[]
   } & {
@@ -141,6 +183,27 @@ class ProtocolFileWriter {
     e => { throw e }
   )
 
+  /**
+   * Loops through the `contractImports` param and calls the respective
+   * Writer function. 
+   * 
+   * The function then returns the abis if any (parameter is
+   * set in the **.daiscongig** file), it also returns the addresses for the 
+   * contracts written. These values are then pushed into their respective arrays
+   * in `#abis` and `#addresses`.
+   * 
+   * Along with the abis and addresses the Writer function also returns the 
+   * npm package if any (parameter is set in the **.daisconfig** file).
+   * 
+   * The npm package strings will then be returned by this `#work` method.
+   * These dependencies are going to be installed along the standard dependencies
+   * on the call to *yarn add* or *npm i*
+   * @param solver 
+   * @param contractImports 
+   * @param dir 
+   * @param net
+   * @returns 
+   */
   readonly #work = async (
     solver: string,
     contractImports: IContractImport[],
@@ -169,6 +232,12 @@ class ProtocolFileWriter {
     }
   ))
 
+  /**
+   * Builds the `abis.ts` file according to the abis selected in the
+   * **.daisconfig** then writes it into `dir`
+   * @param dir 
+   * @returns 
+   */
   readonly #buildABIFile = async (
     dir: string
   ) => {
@@ -190,6 +259,12 @@ class ProtocolFileWriter {
       .catch(e => { throw e })
   }
 
+  /**
+   * Builds the `addresses.ts` file according to the contracts selected in 
+   * the **.daisconfig** then writes it into `dir`
+   * @param dir 
+   * @returns 
+   */
   readonly #buildAddressesFile = async (
     dir: string
   ) => {
@@ -223,27 +298,45 @@ class ProtocolFileWriter {
     return makeFile(pathResolve(
       dir + '/lib/addresses.ts'
     ), AddressesFile.trim())
+      .catch(e => { throw e })
   }
 
+  /**
+   * Called for every BANCOR import
+   * @param dir 
+   * @param solver 
+   * @param net 
+   * @param ci 
+   * @returns 
+   */
   readonly #bancor = async (
     dir: string,
     solver: string,
     net: SupportedNetwork | 'all',
     ci: IContractImport
   ): Promise<IWriterReturn> => {
-    // Is promise.all because the libraries dir can also be made
-    // here when it's needed
-    if (!this.#madeDirs.BANCOR) await Promise.all([
-      makeDir(pathResolve(dir + '/contracts/interfaces/Bancor'))
-    ]).then(
+    if (!this.#madeDirs.BANCOR) await makeDir(pathResolve(
+      dir + '/contracts/interfaces/Bancor'
+    )).then(
       () => this.#madeDirs.BANCOR = true,
       e => { throw e }
     )
+
+    this.#writeIERC20(dir, solver)
+      .catch(e => { throw e })
 
     return BancorWriter(dir, solver, net, ci)
       .catch(e => { throw e })
   }
 
+  /**
+   * Called for every DYDX import
+   * @param dir 
+   * @param solver 
+   * @param net 
+   * @param ci 
+   * @returns 
+   */
   readonly #dydx = async (
     dir: string,
     solver: string,
@@ -258,32 +351,21 @@ class ProtocolFileWriter {
       e => { throw e }
     )
 
-    // Temporary
-    //
-    // Make OpenZeppelin a SupportedImport and treat making the directories the
-    // same as with the other protocols
-    if (!this.#wroteIERC20) await (async () => makeFile(pathResolve(
-      dir + '/contracts/interfaces/@OpenZeppelin/IERC20.sol'
-    ), OpenZeppelin.Interfaces.IERC20(solver)).then(
-      () => this.#wroteIERC20 = true,
-      async e => {
-        if (e.code !== 'ENOENT') throw e
-
-        await makeDir(pathResolve(dir + '/contracts/interfaces/@OpenZeppelin'))
-          .catch(e => { throw e })
-
-        return makeFile(pathResolve(
-          dir + '/contracts/interfaces/@OpenZeppelin/IERC20.sol'
-        ), OpenZeppelin.Interfaces.IERC20(solver))
-          .catch(e => { throw e })
-      }
-    )
-    )().catch(e => { throw e })
+    this.#writeIERC20(dir, solver)
+      .catch(e => { throw e })
 
     return DyDxWriter(dir, solver, net, ci)
       .catch(e => { throw e })
   }
 
+  /**
+   * Called for every KYBER import
+   * @param dir 
+   * @param solver 
+   * @param net 
+   * @param ci 
+   * @returns 
+   */
   readonly #kyber = async (
     dir: string,
     solver: string,
@@ -296,6 +378,9 @@ class ProtocolFileWriter {
       () => this.#madeDirs.KYBER = true,
       e => { throw e }
     )
+
+    this.#writeIERC20(dir, solver)
+      .catch(e => { throw e })
 
     return KyberWriter(dir, solver, net, ci)
       .catch(e => { throw e })
@@ -329,6 +414,23 @@ const makeBaseDirs = async (
   makeDir(pathResolve(dir + '/migrations'))
 ]).catch(e => { throw e })
 
+interface IChildProcessReturn {
+  code: number | null
+  signal: NodeJS.Signals | null
+}
+async function bootAndWaitForChildProcess(
+  cmd: string,
+  args: string[]
+): Promise<IChildProcessReturn> {
+  const child = spawn(cmd, args, { stdio: 'inherit' })
+  return new Promise((resolve, reject) => {
+    child.on('error', err => reject(err))
+    child.on('close', (code, signal) => resolve(
+      { code, signal }
+    ))
+  })
+}
+
 export async function Assemble(dir: string): Promise<void> {
   const daisconfig = await fetchdaisconfig(dir)
     .catch(e => { throw e })
@@ -338,9 +440,36 @@ export async function Assemble(dir: string): Promise<void> {
     daisconfig.contractImports, 
     daisconfig.solversion,
     daisconfig.defaultNet
-  )
+  ).catch(e => { throw e })
+
+  log('Running', ...colors.yellow('npm init'))
+  console.log()
+  await bootAndWaitForChildProcess('npm', ['init'])
+    .catch(e => { throw e })
+
+  if (daisconfig.git) {
+    log('Running', ...colors.yellow('git init'))
+    console.log()
+    writeGitFiles(dir)
+      .catch(e => { throw e })
+
+    await bootAndWaitForChildProcess('git', ['init'])
+      .catch(e => { throw e })
+  }
 
   log(contractDeps)
+}
+
+async function writeGitFiles(dir: string) {
+  return Promise.all([
+    makeFile(pathResolve(
+      dir + '/.gitignore'
+    ), Git.gitignore),
+
+    makeFile(pathResolve(
+      dir + '/.gitattributes'
+    ), Git.gitattributes)
+  ]).catch(e => { throw e })
 }
 
 export async function Init(dir: string): Promise<void> {
