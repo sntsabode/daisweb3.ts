@@ -5,7 +5,7 @@ import { IContractImport, IDaisConfig, SupportedNetwork, SupportedProtocol, Supp
 import fs from 'fs'
 import { BancorWriter } from './protocols/bancor'
 import { DyDxWriter } from './protocols/dydx'
-import { IABIReturn, IWriterReturn } from './protocols/__imports__'
+import { IWriterReturn } from './protocols/__imports__'
 import { KyberWriter } from './protocols/kyber'
 import { OpenZeppelin } from './files/contracts/__contracts__'
 import { spawn } from 'node:child_process'
@@ -142,13 +142,13 @@ class ProtocolFileWriter {
    * imports depend on the one abi. Fix 
    */
   readonly #abis: {
-    [protocol in SupportedProtocol]: Set<IABIReturn>
+    [protocol in SupportedProtocol]: Set<string>
   } & {
-    ERROR: Set<IABIReturn>
+    ERROR: Set<string>
   } = (function () {
     const obj = <
-      { [protocol in SupportedProtocol]: Set<IABIReturn> } &
-      { ERROR: Set<IABIReturn> }
+      { [protocol in SupportedProtocol]: Set<string> } &
+      { ERROR: Set<string> }
     >{}
 
     for (const protocol of SupportedProtocolsArray)
@@ -220,12 +220,8 @@ class ProtocolFileWriter {
       return this.protocols[protocol](
         dir, solver, net, ci
       ).then(val => {
-        val.ABIs.forEach(abi => {
-          this.#abis[protocol].add(
-            abi
-          )
-        })
-  
+        val.ABIs.forEach(abi => this.#abis[protocol].add(abi.ABI))
+        
         val.Addresses.forEach(address => {
           this.#addresses[protocol][address.NET].push({
             ContractName: address.ContractName,
@@ -247,8 +243,6 @@ class ProtocolFileWriter {
   readonly #buildABIFile = async (
     dir: string
   ) => {
-    
-    
     let ABIfile = ''
     for (const [protocol, abis] of Object.entries(this.#abis)) {      
       if (
@@ -258,7 +252,7 @@ class ProtocolFileWriter {
       
       ABIfile += `\nexport const ${protocol}_ABI = {`
       for (const abi of abis)
-        ABIfile += '\n  ' + abi.ABI + ','
+        ABIfile += '\n  ' + abi + ','
 
       ABIfile += '\n}'
     }
@@ -394,6 +388,14 @@ class ProtocolFileWriter {
       .catch(e => { throw e })
   }
 
+  /**
+   * Called for every ONEINCH import
+   * @param dir 
+   * @param solver 
+   * @param net 
+   * @param ci 
+   * @returns 
+   */
   readonly #oneinch = async (
     dir: string,
     solver: string,
