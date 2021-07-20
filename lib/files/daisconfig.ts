@@ -32,7 +32,14 @@ export const DaisConfig = `
     },
     {
       "protocol": "ONEINCH",
-      "pack": "OneInch",
+      "pack": "OneSplit",
+      "omitNpmPack": true,
+      "abi": true,
+      "tsHelpers": true
+    },
+    {
+      "protocol": "ONEINCH",
+      "pack": "OneSplitMulti",
       "omitNpmPack": true,
       "abi": true,
       "tsHelpers": true

@@ -25,7 +25,7 @@ export const DyDxWriter = async (
   if (!Imports[pack])
     return 'ERROR'
   return pack
-})() as SupportedImport | 'ERROR'](
+})()](
   dir, solver, net, ci.abi, ci.pack
 ).then(
   data => ({
@@ -97,7 +97,7 @@ const Flashloan = async (
 const Imports: TImports<SupportedImport> = {
   FLASHLOAN: Flashloan,
   ERROR: async (d, s, n, a, p) => {
-    log.error(...colors.red(p), 'is not a valid import')
+    log.error(...colors.red(p), 'is not a valid DyDx import')
     return { Addresses: [], ABIs: [] }
   }
 }
