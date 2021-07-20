@@ -11,6 +11,7 @@ import { OpenZeppelin } from './files/contracts/__contracts__'
 import { spawn } from 'node:child_process'
 import { Git } from './files/configs/__configs__'
 import { OneInchWriter } from './protocols/oneinch'
+import { UniswapWriter } from './protocols/uniswap'
 
 type ProtocolFileWriterAddresses = {
   [protocol in SupportedProtocol]: {
@@ -40,7 +41,6 @@ type ProtocolWriters = {
 } & {
   ERROR: ProtocolWriterFunc
 }
-
 
 /**
  * Temporary
@@ -221,11 +221,16 @@ class ProtocolFileWriter {
         dir, solver, net, ci
       ).then(val => {
         val.ABIs.forEach(abi => this.#abis[protocol].add(abi.ABI))
-        
-        val.Addresses.forEach(address => {
-          this.#addresses[protocol][address.NET].push({
-            ContractName: address.ContractName,
-            Address: address.Address
+
+        log(this.#addresses.DYDX.MAINNET)
+        val.Addresses.forEach(({ NET, ...data }) => {
+          if (this.#addresses[protocol][NET].some(
+            ({ ...dat }) => dat.Address === data.Address
+          )) return
+
+          this.#addresses[protocol][NET].push({
+            ContractName: data.ContractName,
+            Address: data.Address
           })
         })
   
@@ -416,16 +421,40 @@ class ProtocolFileWriter {
       .catch(e => { throw e })
   }
 
-  readonly protocols: ProtocolWriters = {
+  /**
+   * Called for every Uniswap import
+   * @param dir 
+   * @param solver 
+   * @param net 
+   * @param ci 
+   * @returns 
+   */
+  readonly #uniswap = async (
+    dir: string,
+    solver: string,
+    net: SupportedNetwork | 'all',
+    ci: IContractImport
+  ) => {
+    if (!this.#madeDirs.UNISWAP) await makeDir(pathResolve(
+      dir + '/contracts/interfaces/Uniswap'
+    )).then(
+      () => this.#madeDirs.UNISWAP = true,
+      e => { throw e }
+    )
+
+    return UniswapWriter(dir, solver, net, ci)
+      .catch(e => { throw e })
+  }
+
+  public readonly protocols: ProtocolWriters = {
     BANCOR: this.#bancor,
     DYDX: this.#dydx,
     KYBER: this.#kyber,
     ONEINCH: this.#oneinch,
-    UNISWAP: async (dir, solver, ci) => ({
-      ABIs: [], Addresses: [], Pack: ''
-    }),
+    UNISWAP: this.#uniswap,
     ERROR: async (d,s,n, ci) => {
       log.error('---', ...colors.red(ci.protocol), 'is not a supported protocol')
+      
       return {
         ABIs: [], Addresses: [], Pack: ''
       }
@@ -433,6 +462,11 @@ class ProtocolFileWriter {
   }
 }
 
+/**
+ * Makes the directories the writer functions have to work in
+ * @param dir 
+ * @returns 
+ */
 const makeBaseDirs = async (
   dir: string
 ): Promise<void[]> => Promise.all([
@@ -446,6 +480,13 @@ interface IChildProcessReturn {
   code: number | null
   signal: NodeJS.Signals | null
 }
+/**
+ * Runs a command and resolves the promise on
+ * close.
+ * @param cmd
+ * @param args 
+ * @returns 
+ */
 async function bootAndWaitForChildProcess(
   cmd: string,
   args: string[]
@@ -459,10 +500,17 @@ async function bootAndWaitForChildProcess(
   })
 }
 
+/**
+ * Main function
+ * 
+ * Builds the boilerplate in accordance with the options entered in 
+ * the **.daisconfig** file
+ * @param dir 
+ */
 export async function Assemble(dir: string): Promise<void> {
   const daisconfig = await fetchdaisconfig(dir)
-    .catch(e => { throw e })
-  
+    .catch(e => { throw e })  
+
   const contractDeps = await ProtocolFileWriter.instance.main(
     dir, 
     daisconfig.contractImports, 
@@ -478,9 +526,11 @@ export async function Assemble(dir: string): Promise<void> {
   if (daisconfig.git) {
     log('Running', ...colors.yellow('git init'))
     console.log()
-    writeGitFiles(dir)
+   
+    await writeGitFiles(dir)
       .catch(e => { throw e })
-
+    // Could run these in a Promise.all() but that causes undefined
+    // behaviour if 'writeGitFiles' throws an error
     await bootAndWaitForChildProcess('git', ['init'])
       .catch(e => { throw e })
   }
@@ -488,6 +538,11 @@ export async function Assemble(dir: string): Promise<void> {
   log(contractDeps)
 }
 
+/**
+ * 
+ * @param dir 
+ * @returns 
+ */
 async function writeGitFiles(dir: string) {
   return Promise.all([
     makeFile(pathResolve(
@@ -504,6 +559,11 @@ export async function Init(dir: string): Promise<void> {
   return makeFile(pathResolve(dir + '/.daisconfig'), DaisConfig)
 }
 
+/**
+ * Is a promise for error handling purposes
+ * @param dir 
+ * @returns 
+ */
 async function fetchdaisconfig(dir: string): Promise<IDaisConfig> {
   return JSON.parse(
     fs.readFileSync(pathResolve(dir + '/.daisconfig')).toString()
