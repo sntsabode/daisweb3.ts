@@ -15,6 +15,7 @@ export interface IDaisConfig {
   readonly ganache: boolean
   readonly packman: 'yarn' | 'npm'
   readonly omitTruffleHdWalletProvider: boolean
+  readonly ethNodeURL: string
   readonly contractImports: IContractImport[]
   readonly addedDependencies: string[]
   readonly addedDevDependencies: string[]

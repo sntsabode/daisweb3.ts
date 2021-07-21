@@ -5,9 +5,10 @@ export const DaisConfig = `
   "eslint": true,
   "git": true,
   "contractWriteDir": "/lib/__abis__/artifacts",
-  "ganache": false,
+  "ganache": true,
   "packman": "yarn",
   "omitTruffleHdWalletProvider": false,
+  "ethNodeURL": "wss://mainnet.infura.io/ws/v3/",
   "contractImports": [
     {
       "protocol": "UNISWAP",
