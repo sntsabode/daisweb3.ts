@@ -2,16 +2,17 @@ import { colors, log, makeDir, makeFile } from './utils'
 import { resolve as pathResolve } from 'path'
 import { DaisConfig } from './files/daisconfig'
 import { IContractImport, IDaisConfig, SupportedNetwork, SupportedProtocol, SupportedProtocolsArray } from './daisconfig'
-import fs from 'fs'
 import { BancorWriter } from './protocols/bancor'
 import { DyDxWriter } from './protocols/dydx'
 import { IWriterReturn } from './protocols/__imports__'
 import { KyberWriter } from './protocols/kyber'
-import { OpenZeppelin } from './files/contracts/__contracts__'
+import { OpenZeppelin, Truffle } from './files/contracts/__contracts__'
 import { spawn } from 'node:child_process'
-import { Git } from './files/configs/__configs__'
+import { Eslint, Ganache, Git, TS } from './files/configs/__configs__'
 import { OneInchWriter } from './protocols/oneinch'
 import { UniswapWriter } from './protocols/uniswap'
+import { Truffle as TruffleConfigs } from './files/configs/__configs__'
+import { readFileSync } from 'fs'
 
 /**
  * The type used in `ProtocolFileWriter.#addresses`
@@ -22,7 +23,7 @@ type ProtocolFileWriterAddresses = {
       ContractName: string
       Address: string
     }[]
-  } 
+  }
 } & {
   ERROR: {
     [net in SupportedNetwork]: {
@@ -92,7 +93,7 @@ const WriteIERC20 = async (
  */
 class ProtocolFileWriter {
   static readonly instance = new ProtocolFileWriter()
-  private constructor ( ) { /**/ }
+  private constructor() { /**/ }
 
   /**
    * Flag to make sure IERC20.sol is written only once
@@ -117,8 +118,8 @@ class ProtocolFileWriter {
   readonly #madeDirs: {
     [protocol in SupportedProtocol]: boolean
   } = (function () {
-    const protocolObject = <{ 
-      [protocol in SupportedProtocol]: boolean 
+    const protocolObject = <{
+      [protocol in SupportedProtocol]: boolean
     }>{}
     for (const protocol of SupportedProtocolsArray)
       protocolObject[protocol] = false
@@ -159,7 +160,7 @@ class ProtocolFileWriter {
     const obj = <
       { [protocol in SupportedProtocol]: Set<string> } &
       { ERROR: Set<string> }
-    >{}
+      >{}
 
     for (const protocol of SupportedProtocolsArray)
       obj[protocol] = new Set()
@@ -184,18 +185,18 @@ class ProtocolFileWriter {
     net: SupportedNetwork | 'all'
   ): Promise<string[]> => makeBaseDirs(dir)
     .then(() => this.#work(
-    solver, contractImports, dir, net
-  ), e => { throw e }).then(
-    (val) => Promise.all([
-      this.#buildABIFile(dir),
-      this.#buildAddressesFile(dir)
-    ]).then(
-      () => this.#makeDependenciesArray(val),
-      e => { throw e }
-    ),
+      solver, contractImports, dir, net
+    ), e => { throw e }).then(
+      (val) => Promise.all([
+        this.#buildABIFile(dir),
+        this.#buildAddressesFile(dir)
+      ]).then(
+        () => this.#makeDependenciesArray(val),
+        e => { throw e }
+      ),
 
-    e => { throw e }
-  )
+      e => { throw e }
+    )
 
   readonly #makeDependenciesArray = (
     depsParam: string[][]
@@ -204,7 +205,7 @@ class ProtocolFileWriter {
     for (const depsArray of depsParam)
       for (const dep of depsArray)
         if (dep) deps.push(dep)
-        
+
     return deps
   }
 
@@ -253,7 +254,7 @@ class ProtocolFileWriter {
             Address: data.Address
           })
         })
-  
+
         return val.Pack
       }, e => { throw e })
     }
@@ -269,12 +270,12 @@ class ProtocolFileWriter {
     dir: string
   ) => {
     let ABIfile = ''
-    for (const [protocol, abis] of Object.entries(this.#abis)) {      
+    for (const [protocol, abis] of Object.entries(this.#abis)) {
       if (
         abis.size === 0
         || protocol === 'ERROR'
       ) continue
-      
+
       ABIfile += `\nexport const ${protocol}_ABI = {`
       for (const abi of abis)
         ABIfile += '\n  ' + abi + ','
@@ -472,9 +473,9 @@ class ProtocolFileWriter {
     KYBER: this.#kyber,
     ONEINCH: this.#oneinch,
     UNISWAP: this.#uniswap,
-    ERROR: async (d,s,n, ci) => {
+    ERROR: async (d, s, n, ci) => {
       log.error('---', ...colors.red(ci.protocol), 'is not a supported protocol')
-      
+
       return {
         ABIs: [], Addresses: [], Pack: ['']
       }
@@ -524,8 +525,11 @@ async function npminit(): Promise<void> {
   console.log()
   log('Running', ...colors.yellow('npm init'))
   console.log()
-  await bootAndWaitForChildProcess('npm', ['init'])
-    .catch(e => { throw e })
+  return bootAndWaitForChildProcess('npm', ['init'])
+    .then(
+      () => {/**/ },
+      e => { throw e }
+    )
 }
 
 async function git(git: boolean, dir: string): Promise<void> {
@@ -533,14 +537,14 @@ async function git(git: boolean, dir: string): Promise<void> {
     console.log()
     log('Running', ...colors.yellow('git init'))
     console.log()
-   
+
     await writeGitFiles(dir)
       .catch(e => { throw e })
     // Could run these in a Promise.all() but that causes undefined
     // behaviour if 'writeGitFiles' throws an error
     return bootAndWaitForChildProcess('git', ['init'])
       .then(
-        () => {/***/},
+        () => {/***/ },
         e => { throw e }
       )
   }
@@ -557,20 +561,43 @@ async function git(git: boolean, dir: string): Promise<void> {
  */
 export async function Assemble(dir: string): Promise<void> {
   const daisconfig = await fetchdaisconfig(dir)
-    .catch(e => { throw e })  
+    .catch(e => { throw e })
+
+  // It's best these run sequentially
 
   const contractDeps = await ProtocolFileWriter.instance.main(
-    dir, 
-    daisconfig.contractImports, 
+    dir,
+    daisconfig.contractImports,
     daisconfig.solversion,
     daisconfig.defaultNet
   ).catch(e => { throw e })
 
+  await Promise.all([
+    writeTruffleFiles(dir,
+      daisconfig.solversion,
+      daisconfig.contractWriteDir
+    ),
+
+    tscInit(dir)
+  ]).catch(e => { throw e })
+
   await npminit()
+    .catch(e => { throw e })
+
+  await addTscTopackjson(dir)
     .catch(e => { throw e })
 
   await git(daisconfig.git, dir)
     .catch(e => { throw e })
+
+  await installDevDependencies(
+    daisconfig.addedDevDependencies,
+    daisconfig.ganache,
+    daisconfig.packman,
+    daisconfig.eslint,
+    daisconfig.ethNodeURL,
+    dir
+  ).catch(e => { throw e })
 
   await installDependencies(
     contractDeps,
@@ -578,6 +605,34 @@ export async function Assemble(dir: string): Promise<void> {
     daisconfig.packman,
     daisconfig.addedDependencies
   ).catch(e => { throw e })
+}
+
+/**
+ * 
+ * @param dir 
+ * @returns 
+ */
+export async function tscInit(dir: string): Promise<void> {
+  return makeFile(pathResolve(
+    dir + '/tsconfig.json'
+  ), TS.tsconfig).catch(
+    e => { throw e }
+  )
+}
+
+/**
+ * 
+ * @param dir 
+ * @returns 
+ */
+export async function addTscTopackjson(dir: string): Promise<void> {
+  dir = pathResolve(dir + '/package.json')
+  const packjson = JSON.parse(readFileSync(dir).toString())
+  packjson.scripts.tsc = 'tsc'
+  packjson.main = '/lib/index.ts'
+
+  return makeFile(dir, JSON.stringify(packjson))
+    .catch(e => { throw e })
 }
 
 /**
@@ -613,6 +668,53 @@ export async function installDependencies(
 }
 
 /**
+ * Installs development dependencies
+ * @param addedDevDeps 
+ * @param ganache 
+ * @param dir 
+ * @param packman 
+ * @param eslint 
+ */
+export async function installDevDependencies(
+  addedDevDeps: string[],
+  ganache: boolean,
+  packman: 'yarn' | 'npm',
+  eslint: boolean,
+  ethNodeURL: string,
+  dir: string
+): Promise<IChildProcessReturn> {
+  const devDeps = ['typescript', 'ts-node']
+
+  if (ganache) {
+    await writeGanache(dir, ethNodeURL)
+      .catch(e => { throw e })
+
+    devDeps.push('ganache-cli')
+  }
+
+  if (eslint) {
+    await writeEslintFiles(dir)
+      .catch(e => { throw e })
+
+    devDeps.push(...[
+      'eslint',
+      '@typescript-eslint/eslint-plugin',
+      '@typescript-eslint/parser'
+    ])
+  }
+
+  devDeps.push(...addedDevDeps)
+
+  console.log()
+  log('Installing dev dependencies')
+  console.log()
+
+  return runInstallCommands(
+    packman, true, devDeps
+  ).catch(e => { throw e })
+}
+
+/**
  * Runs the install commands
  * @param packman 
  * @param dev 
@@ -627,7 +729,7 @@ async function runInstallCommands(
   const args = ['add', ...deps]
   if (dev) args.push('-D')
 
-  switch(packman) {
+  switch (packman) {
     case 'yarn':
       return bootAndWaitForChildProcess('yarn', args)
         .catch(e => { throw e })
@@ -655,9 +757,68 @@ async function runInstallCommands(
 /**
  * 
  * @param dir 
+ * @param solver 
+ * @param contractWriteDir 
  * @returns 
  */
-async function writeGitFiles(dir: string) {
+export async function writeTruffleFiles(
+  dir: string,
+  solver: string,
+  contractWriteDir: string
+): Promise<void[]> {
+  return Promise.all([
+    makeFile(pathResolve(
+      dir + '/contracts/Migrations.sol'
+    ), Truffle.Libraries.Migrations(solver)),
+
+    makeFile(pathResolve(
+      dir + '/migrations/1_initial_migration.js'
+    ), TruffleConfigs.InitialMigrationJS),
+
+    makeFile(pathResolve(
+      dir + '/truffle-config.js'
+    ), TruffleConfigs.TruffleConfig(solver, contractWriteDir))
+  ]).catch(e => { throw e })
+}
+
+/**
+ * 
+ * @param dir 
+ * @param ethNodeURL
+ * @returns 
+ */
+export async function writeGanache(
+  dir: string,
+  ethNodeURL: string
+): Promise<void> {
+  return makeFile(pathResolve(
+    dir + '/fork-chain.js'
+  ), Ganache.ForkChain(ethNodeURL))
+}
+
+/**
+ * 
+ * @param dir 
+ * @returns 
+ */
+export async function writeEslintFiles(dir: string): Promise<void[]> {
+  return Promise.all([
+    makeFile(pathResolve(
+      dir + '/.eslintignore'
+    ), Eslint.eslintignore),
+
+    makeFile(pathResolve(
+      dir + '/.eslintrc'
+    ), Eslint.eslintrc)
+  ])
+}
+
+/**
+ * 
+ * @param dir 
+ * @returns 
+ */
+export async function writeGitFiles(dir: string): Promise<void[]> {
   return Promise.all([
     makeFile(pathResolve(
       dir + '/.gitignore'
@@ -680,6 +841,6 @@ export async function Init(dir: string): Promise<void> {
  */
 async function fetchdaisconfig(dir: string): Promise<IDaisConfig> {
   return JSON.parse(
-    fs.readFileSync(pathResolve(dir + '/.daisconfig')).toString()
+    readFileSync(pathResolve(dir + '/.daisconfig')).toString()
   )
 }
