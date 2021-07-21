@@ -26,7 +26,7 @@ const formatIntoMB = (param) => {
 const server = ganache.server({
   port: 9090,
   default_balance_ether: 100,
-  fork: new Web3.providers.WebsocketProvider(${ethNode}),
+  fork: new Web3.providers.WebsocketProvider('${ethNode}'),
   ws: true,
   debug: true,
   vmErrorsOnRPCResponse: true,
