@@ -25,7 +25,7 @@ export const UniswapWriter = async (
 ).then(
   data => ({
     ...data,
-    Pack: ci.pack ? NPMPacks.UNISWAP.V2SDK : ''
+    Pack: ci.pack ? NPMPacks.UNISWAP.V2SDK : ['']
   })
 )
 
@@ -59,7 +59,7 @@ const V2Router = async (
   ), Uniswap.Interfaces.IUniswapV2Router01(solver)),
 
   makeFile(pathResolve(
-    dir + '/contracts/interfaces/Uniswap/IUniswapv2Router02.sol'
+    dir + '/contracts/interfaces/Uniswap/IUniswapV2Router02.sol'
   ), Uniswap.Interfaces.IUniswapV2Router02(solver))
 ]).then(
   () => ({

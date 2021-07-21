@@ -32,7 +32,7 @@ export const BancorWriter = async (
   data => ({
     ...data,
     Pack: !ci.omitNpmPack ?
-      NPMPacks.BANCOR.SDK : ''
+      NPMPacks.BANCOR.SDK : ['']
   }),
   e => { throw e }
 )

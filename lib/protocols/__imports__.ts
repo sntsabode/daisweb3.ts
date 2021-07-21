@@ -6,7 +6,7 @@ export interface IIndividualWriterReturn {
 }
 
 export interface IWriterReturn extends IIndividualWriterReturn {
-  Pack: string
+  Pack: string[]
 }
 
 export type IIndividualWriterFunc = (

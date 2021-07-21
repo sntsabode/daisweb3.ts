@@ -27,8 +27,8 @@ export const KyberWriter = async (
     Pack: !ci.omitNpmPack
       ? (() => { 
         log.warning('Kyber does not have an npm package relating to', ci.pack)
-        return ''
-      })() : ''
+        return ['']
+      })() : ['']
   })
 )
 
