@@ -1,11 +1,17 @@
-import fs from 'fs'
+import { 
+  mkdir,
+  writeFile,
+  readdirSync,
+  rmSync
+} from 'fs'
 import { createInterface } from 'readline'
+import Box from 'cli-box'
 
 export const dir = process.cwd()
 
 export const purgeDir = (dir: string): void => {
-  for (const entry of fs.readdirSync(dir)) {
-    fs.rmSync(entry, { 
+  for (const entry of readdirSync(dir)) {
+    rmSync(entry, { 
       recursive: true,
       force: true,
       retryDelay: 1000,
@@ -48,7 +54,7 @@ export const makeFile = async (
   path: string,
   data: string
 ): Promise<void> => new Promise((resolve, reject) =>
-  fs.writeFile(path, data, 
+  writeFile(path, data, 
     err => err ? reject(err) : resolve()  
   )
 )
@@ -56,10 +62,46 @@ export const makeFile = async (
 export const makeDir = async (
   path: string
 ): Promise<void> => new Promise((resolve, reject) =>
-  fs.mkdir(path, { recursive: true }, 
+  mkdir(path, { recursive: true }, 
     err => err ? reject(err) : resolve()
   )
 )
+
+export const colors = {
+  red: <T>(...msg: T[]): string[] => msg.map(
+    msg => `\x1b[31m${msg}${colors.reset}`
+  ),
+
+  green: <T>(...msg: T[]): string[] => msg.map(
+    msg => `\x1b[32m${msg}${colors.reset}`
+  ),
+
+  yellow: <T>(...msg: T[]): string[] => msg.map(
+    msg => `\x1b[33m${msg}${colors.reset}`
+  ),
+
+  blue: <T>(...msg: T[]): string[] => msg.map(
+    msg => `\x1b[34m${msg}${colors.reset}`
+  ),
+
+  magenta: <T>(...msg: T[]): string[] => msg.map(
+    msg => `\x1b[35m${msg}${colors.reset}`
+  ),
+
+  cyan: <T>(...msg: T[]): string[] => msg.map(
+    msg => `\x1b[36m${msg}${colors.reset}`
+  ),
+
+  white: <T>(...msg: T[]): string[] => msg.map(
+    msg => `\x1b[37m${msg}${colors.reset}`
+  ),
+
+  blink: <T>(...msg: T[]): string[] => msg.map(
+    msg => `\x1b[5m${msg}${colors.reset}`
+  ),
+
+  reset: '\x1b[0m'
+}
 
 const tag = '[daisweb3.ts]'
 export function log<L>(...msg: L[]): void {
@@ -91,34 +133,103 @@ export namespace log {
     ...colors.yellow(tag),
     ...msg
   )
-}
 
-export const colors = {
-  red: <T>(...msg: T[]): string[] => msg.map(
-    msg => `\x1b[31m${msg}${colors.reset}`
-  ),
+  export const cyanbox = colors.cyan(
+    '╭',
+    '─',
+    '╮',
+    '│',
+    '╯',
+    '─',
+    '╰',
+    '│'
+  )
 
-  green: <T>(...msg: T[]): string[] => msg.map(
-    msg => `\x1b[32m${msg}${colors.reset}`
-  ),
+  export function withbox(
+    templateLiteral: string
+  ): void {
+    return console.log(
+      new Box({
+      w: 50,
+      h: 10,
+      stringify: false,
+      marks: {
+        nw: cyanbox[0],
+        n: cyanbox[1],
+        ne: cyanbox[2],
+        e: cyanbox[3],
+        se: cyanbox[4],
+        s: cyanbox[5],
+        sw: cyanbox[6],
+        w: cyanbox[7]
+      }
+    }, templateLiteral).stringify())
+  }
 
-  yellow: <T>(...msg: T[]): string[] => msg.map(
-    msg => `\x1b[33m${msg}${colors.reset}`
-  ),
+  // eslint-disable-next-line
+  export namespace withbox {
+    const errorbox = colors.red(
+      '╭',
+      '─',
+      '╮',
+      '│',
+      '╯',
+      '─',
+      '╰',
+      '│'
+    )
 
-  blue: <T>(...msg: T[]): string[] => msg.map(
-    msg => `\x1b[34m${msg}${colors.reset}`
-  ),
+    const successbox = colors.green(
+      '╭',
+      '─',
+      '╮',
+      '│',
+      '╯',
+      '─',
+      '╰',
+      '│'
+    )
 
-  magenta: <T>(...msg: T[]): string[] => msg.map(
-    msg => `\x1b[35m${msg}${colors.reset}`
-  ),
+    export const error = (
+      templateLiteral: string,
+      w = 50,
+      h = 10
+    ): void => console.error(new Box({
+      w: w,
+      h: h,
+      stringify: false,
+      marks: {
+        nw: errorbox[0],
+        n: errorbox[1],
+        ne: errorbox[2],
+        e: errorbox[3],
+        se: errorbox[4],
+        s: errorbox[5],
+        sw: errorbox[6],
+        w: errorbox[7]
+      }
+    }, templateLiteral).stringify())
 
-  cyan: <T>(...msg: T[]): string[] => msg.map(
-    msg => `\x1b[36m${msg}${colors.reset}`
-  ),
-
-  reset: '\x1b[0m'
+    export const success = (
+      templateLiteral: string,
+      w = 50,
+      h = 10
+    ): void => console.log(new Box({
+      w: w,
+      h: h,
+      stringify: false,
+      marks: {
+        nw: successbox[0],
+        n: successbox[1],
+        ne: successbox[2],
+        e: successbox[3],
+        se: successbox[4],
+        s: successbox[5],
+        sw: successbox[6],
+        w: successbox[7]
+      }
+    }, templateLiteral).stringify())
+  }
 }
 
 // eslint-disable-next-line
