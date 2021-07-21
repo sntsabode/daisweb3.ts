@@ -13,6 +13,9 @@ import { Git } from './files/configs/__configs__'
 import { OneInchWriter } from './protocols/oneinch'
 import { UniswapWriter } from './protocols/uniswap'
 
+/**
+ * The type used in `ProtocolFileWriter.#addresses`
+ */
 type ProtocolFileWriterAddresses = {
   [protocol in SupportedProtocol]: {
     [net in SupportedNetwork]: {
@@ -29,6 +32,10 @@ type ProtocolFileWriterAddresses = {
   }
 }
 
+/**
+ * Type signature for the writer functions in 
+ * `ProtocolFileWriter.protocols`
+ */
 type ProtocolWriterFunc = (
   dir: string,
   solver: string,
@@ -36,6 +43,9 @@ type ProtocolWriterFunc = (
   ci: IContractImport
 ) => Promise<IWriterReturn>
 
+/**
+ * Type signature for `ProtocolFileWriter.protocols`
+ */
 type ProtocolWriters = {
   [protocol in SupportedProtocol]: ProtocolWriterFunc
 } & {
@@ -180,12 +190,23 @@ class ProtocolFileWriter {
       this.#buildABIFile(dir),
       this.#buildAddressesFile(dir)
     ]).then(
-      () => [...new Set(val)],
+      () => this.#makeDependenciesArray(val),
       e => { throw e }
     ),
 
     e => { throw e }
   )
+
+  readonly #makeDependenciesArray = (
+    depsParam: string[][]
+  ): string[] => {
+    const deps: string[] = []
+    for (const depsArray of depsParam)
+      for (const dep of depsArray)
+        if (dep) deps.push(dep)
+        
+    return deps
+  }
 
   /**
    * Loops through the `contractImports` param and calls the respective
@@ -213,7 +234,7 @@ class ProtocolFileWriter {
     contractImports: IContractImport[],
     dir: string,
     net: SupportedNetwork | 'all'
-  ): Promise<string[]> => Promise.all(contractImports.map(
+  ): Promise<string[][]> => Promise.all(contractImports.map(
     ci => {
       let protocol = <SupportedProtocol | 'ERROR'>ci.protocol.toUpperCase()
       protocol = !this.protocols[protocol] ? 'ERROR' : protocol
@@ -222,7 +243,6 @@ class ProtocolFileWriter {
       ).then(val => {
         val.ABIs.forEach(abi => this.#abis[protocol].add(abi.ABI))
 
-        log(this.#addresses.DYDX.MAINNET)
         val.Addresses.forEach(({ NET, ...data }) => {
           if (this.#addresses[protocol][NET].some(
             ({ ...dat }) => dat.Address === data.Address
@@ -329,7 +349,7 @@ class ProtocolFileWriter {
       e => { throw e }
     )
 
-    this.#writeIERC20(dir, solver)
+    await this.#writeIERC20(dir, solver)
       .catch(e => { throw e })
 
     return BancorWriter(dir, solver, net, ci)
@@ -358,7 +378,7 @@ class ProtocolFileWriter {
       e => { throw e }
     )
 
-    this.#writeIERC20(dir, solver)
+    await this.#writeIERC20(dir, solver)
       .catch(e => { throw e })
 
     return DyDxWriter(dir, solver, net, ci)
@@ -386,7 +406,7 @@ class ProtocolFileWriter {
       e => { throw e }
     )
 
-    this.#writeIERC20(dir, solver)
+    await this.#writeIERC20(dir, solver)
       .catch(e => { throw e })
 
     return KyberWriter(dir, solver, net, ci)
@@ -414,7 +434,7 @@ class ProtocolFileWriter {
       e => { throw e }
     )
 
-    this.#writeIERC20(dir, solver)
+    await this.#writeIERC20(dir, solver)
       .catch(e => { throw e })
 
     return OneInchWriter(dir, solver, net, ci)
@@ -456,7 +476,7 @@ class ProtocolFileWriter {
       log.error('---', ...colors.red(ci.protocol), 'is not a supported protocol')
       
       return {
-        ABIs: [], Addresses: [], Pack: ''
+        ABIs: [], Addresses: [], Pack: ['']
       }
     }
   }
@@ -500,6 +520,34 @@ async function bootAndWaitForChildProcess(
   })
 }
 
+async function npminit(): Promise<void> {
+  console.log()
+  log('Running', ...colors.yellow('npm init'))
+  console.log()
+  await bootAndWaitForChildProcess('npm', ['init'])
+    .catch(e => { throw e })
+}
+
+async function git(git: boolean, dir: string): Promise<void> {
+  if (git) {
+    console.log()
+    log('Running', ...colors.yellow('git init'))
+    console.log()
+   
+    await writeGitFiles(dir)
+      .catch(e => { throw e })
+    // Could run these in a Promise.all() but that causes undefined
+    // behaviour if 'writeGitFiles' throws an error
+    return bootAndWaitForChildProcess('git', ['init'])
+      .then(
+        () => {/***/},
+        e => { throw e }
+      )
+  }
+
+  return
+}
+
 /**
  * Main function
  * 
@@ -518,24 +566,90 @@ export async function Assemble(dir: string): Promise<void> {
     daisconfig.defaultNet
   ).catch(e => { throw e })
 
-  log('Running', ...colors.yellow('npm init'))
-  console.log()
-  await bootAndWaitForChildProcess('npm', ['init'])
+  await npminit()
     .catch(e => { throw e })
 
-  if (daisconfig.git) {
-    log('Running', ...colors.yellow('git init'))
-    console.log()
-   
-    await writeGitFiles(dir)
-      .catch(e => { throw e })
-    // Could run these in a Promise.all() but that causes undefined
-    // behaviour if 'writeGitFiles' throws an error
-    await bootAndWaitForChildProcess('git', ['init'])
-      .catch(e => { throw e })
-  }
+  await git(daisconfig.git, dir)
+    .catch(e => { throw e })
 
-  log(contractDeps)
+  await installDependencies(
+    contractDeps,
+    daisconfig.omitTruffleHdWalletProvider,
+    daisconfig.packman,
+    daisconfig.addedDependencies
+  ).catch(e => { throw e })
+}
+
+/**
+ * Installs production dependencies
+ * @param contractDeps 
+ * @param omitTruffleHd 
+ * @param packman 
+ * @param addedDeps 
+ * @returns 
+ */
+export async function installDependencies(
+  contractDeps: string[],
+  omitTruffleHd: boolean,
+  packman: 'yarn' | 'npm',
+  addedDeps: string[]
+): Promise<IChildProcessReturn> {
+  const deps = ['web3', 'dotenv']
+
+  if (!omitTruffleHd) deps.push(
+    '@truffle/hdwallet-provider'
+  )
+
+  deps.push(...addedDeps)
+  deps.push(...contractDeps)
+
+  console.log()
+  log('Installing dependencies')
+  console.log()
+
+  return runInstallCommands(
+    packman, false, deps
+  ).catch(e => { throw e })
+}
+
+/**
+ * Runs the install commands
+ * @param packman 
+ * @param dev 
+ * @param deps 
+ * @returns 
+ */
+async function runInstallCommands(
+  packman: 'yarn' | 'npm',
+  dev: boolean,
+  deps: string[]
+) {
+  const args = ['add', ...deps]
+  if (dev) args.push('-D')
+
+  switch(packman) {
+    case 'yarn':
+      return bootAndWaitForChildProcess('yarn', args)
+        .catch(e => { throw e })
+
+    case 'npm':
+      return bootAndWaitForChildProcess('npm', args)
+        .catch(e => { throw e })
+
+    default:
+      log.error('Unsupported package manager')
+      log.warning('Attempting yarn add')
+      return bootAndWaitForChildProcess('yarn', [
+        'add',
+        ...deps
+      ]).then(val => val, () => {
+        log.error(...colors.red('yarn add'), 'failed.')
+        log.warning('Attempting npm i')
+
+        return bootAndWaitForChildProcess('npm', args)
+          .catch(e => { throw e })
+      })
+  }
 }
 
 /**
