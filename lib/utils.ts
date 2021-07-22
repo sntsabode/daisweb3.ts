@@ -2,10 +2,13 @@ import {
   mkdir,
   writeFile,
   readdirSync,
-  rmSync
+  rmSync,
+  lstatSync
 } from 'fs'
 import { createInterface } from 'readline'
 import Box from 'cli-box'
+import trash from 'trash'
+import path from 'path'
 
 export const dir = process.cwd()
 
@@ -18,6 +21,22 @@ export const purgeDir = (dir: string): void => {
       maxRetries: 3
     })
   }
+}
+
+export const trashDir = async (
+  dir: string
+): Promise<void[]> => {
+  return Promise.all(readdirSync(dir).map(async path_ => {
+    const curPath = path.join(dir, path_)
+
+    if (path_ === 'node_modules') return purgeDir(curPath)
+
+    if (lstatSync(curPath).isDirectory()) {
+      await trashDir(curPath)
+        .catch(e => { throw e })
+    } else
+      trash(curPath)
+  }))
 }
 
 export async function ask(
