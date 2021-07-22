@@ -8,7 +8,7 @@ describe(
     require('./protocols/dydx.test')
     require('./protocols/kyber.test')
     require('./protocols/oneinch.test')
-    //require('./protocols/uniswap.test')
+    require('./protocols/uniswap.test')
   })
 
   describe(
