@@ -25,7 +25,7 @@ export const OneInchWriter = async (
 ).then(
   data => ({
     ...data,
-    Pack: ci.pack ? (() => {
+    Pack: !ci.omitNpmPack ? (() => {
       log.error('OneInch doesn\'t have an npm package relating to', ...colors.red(ci.pack))
       return ['']
     })() : ['']
