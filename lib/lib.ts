@@ -7,7 +7,7 @@ import { spawn } from 'node:child_process'
 import { Eslint, Ganache, Git, TS } from './files/configs/__configs__'
 import { Truffle as TruffleConfigs } from './files/configs/__configs__'
 import { readFileSync } from 'fs'
-import { ProtocolFileWriter } from './protocol-file-writer'
+import { ProtocolFileWriter } from './protocol-writer'
 
 /**
  * Main function
@@ -16,7 +16,7 @@ import { ProtocolFileWriter } from './protocol-file-writer'
  * the **.daisconfig** file
  * @param dir 
  */
- export async function Assemble(dir: string): Promise<void> {
+export async function Assemble(dir: string): Promise<void> {
   const daisconfig = await fetchdaisconfig(dir)
     .catch(e => { throw e })
 
@@ -41,7 +41,7 @@ import { ProtocolFileWriter } from './protocol-file-writer'
   await npminit()
     .catch(e => { throw e })
 
-  await addTscTopackjson(dir)
+  await mutatePackJson(dir)
     .catch(e => { throw e })
 
   await git(daisconfig.git, dir)
@@ -137,7 +137,7 @@ export async function tscInit(dir: string): Promise<void> {
  * @param dir 
  * @returns 
  */
-export async function addTscTopackjson(dir: string): Promise<void> {
+export async function mutatePackJson(dir: string): Promise<void> {
   dir = pathResolve(dir + '/package.json')
   const packjson = JSON.parse(readFileSync(dir).toString())
   packjson.scripts.tsc = 'tsc'
@@ -195,7 +195,7 @@ export async function installDevDependencies(
   ethNodeURL: string,
   dir: string
 ): Promise<IChildProcessReturn> {
-  const devDeps = ['typescript', 'ts-node']
+  const devDeps = ['typescript', 'ts-node', '@types/node']
 
   if (ganache) {
     await writeGanache(dir, ethNodeURL)
