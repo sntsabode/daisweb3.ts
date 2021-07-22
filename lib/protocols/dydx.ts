@@ -30,7 +30,7 @@ export const DyDxWriter = async (
 ).then(
   data => ({
     ...data,
-    Pack: ci.pack ?
+    Pack: !ci.omitNpmPack ?
       NPMPacks.DYDX.V3Client : ['']
   }),
   e => { throw e }
