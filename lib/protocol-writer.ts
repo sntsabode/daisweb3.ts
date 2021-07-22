@@ -6,7 +6,7 @@ import {
 } from './daisconfig'
 import { BancorWriter } from './protocols/bancor'
 import { DyDxWriter } from './protocols/dydx'
-import { IWriterReturn } from './protocols/__imports__'
+import { IABIReturn, IWriterReturn } from './protocols/__imports__'
 import { KyberWriter } from './protocols/kyber'
 import { OpenZeppelin } from './files/contracts/__contracts__'
 import { resolve as pathResolve } from 'path'
@@ -24,7 +24,7 @@ import { UniswapWriter } from './protocols/uniswap'
 ): Promise<void[]> => Promise.all([
   makeDir(pathResolve(dir + '/contracts/interfaces')),
   makeDir(pathResolve(dir + '/contracts/libraries')),
-  makeDir(pathResolve(dir + '/lib')),
+  makeDir(pathResolve(dir + '/lib/__abis__/abis')),
   makeDir(pathResolve(dir + '/migrations'))
 ]).catch(e => { throw e })
 
@@ -167,18 +167,18 @@ export class ProtocolFileWriter {
    * imports depend on the one abi. Fix 
    */
   readonly #abis: {
-    [protocol in SupportedProtocol]: Set<string>
+    [protocol in SupportedProtocol]: IABIReturn[]
   } & {
-    ERROR: Set<string>
+    ERROR: IABIReturn[]
   } = (function () {
     const obj = <
-      { [protocol in SupportedProtocol]: Set<string> } &
-      { ERROR: Set<string> }
+      { [protocol in SupportedProtocol]: IABIReturn[] } &
+      { ERROR: IABIReturn[] }
       >{}
 
     for (const protocol of SupportedProtocolsArray)
-      obj[protocol] = new Set()
-    obj.ERROR = new Set()
+      obj[protocol] = []
+    obj.ERROR = []
     return obj
   })()
 
@@ -256,7 +256,15 @@ export class ProtocolFileWriter {
       return this.protocols[protocol](
         dir, solver, net, ci
       ).then(val => {
-        val.ABIs.forEach(abi => this.#abis[protocol].add(abi.ABI))
+        val.ABIs.forEach(({ ContractName, ABI }) => {
+          if (this.#abis[protocol].some(
+            ({ ContractName: CN }) => ContractName === CN
+          )) return
+
+          this.#abis[protocol].push({
+            ContractName, ABI
+          })
+        })
 
         val.Addresses.forEach(({ NET, ...data }) => {
           if (this.#addresses[protocol][NET].some(
@@ -282,23 +290,33 @@ export class ProtocolFileWriter {
    */
   readonly #buildABIFile = async (
     dir: string
-  ): Promise<void> => {
+  ): Promise<void[]> => {
+    const ABIprom = <(() => Promise<void>)[]>[]
+
     let ABIfile = ''
     for (const [protocol, abis] of Object.entries(this.#abis)) {
       if (
-        abis.size === 0
+        abis.length === 0
         || protocol === 'ERROR'
       ) continue
 
-      ABIfile += `\nexport const ${protocol}_ABI = {`
-      for (const abi of abis)
-        ABIfile += '\n  ' + abi + ','
+      ABIfile += `\nexport const ${protocol}_ABIs = {`
+      for (const abi of abis) {
+        ABIfile += `\n  ${abi.ContractName}: require('./abis/${abi.ContractName}.json'),`
+
+        ABIprom.push(() => makeFile(pathResolve(
+          dir + '/lib/__abis__/abis/' + abi.ContractName + '.json'
+        ), abi.ABI))
+      }
 
       ABIfile += '\n}'
     }
 
-    return makeFile(pathResolve(dir + '/lib/abis.ts'), ABIfile.trim())
-      .catch(e => { throw e })
+    ABIprom.push(() => makeFile(pathResolve(
+      dir + '/lib/__abis__/abis.ts'
+    ), ABIfile.trim()))
+
+    return Promise.all(ABIprom.map(cb => cb()))
   }
 
   /**
