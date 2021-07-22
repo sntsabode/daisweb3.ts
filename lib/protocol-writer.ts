@@ -294,13 +294,15 @@ export class ProtocolFileWriter {
     const ABIprom = <(() => Promise<void>)[]>[]
 
     let ABIfile = ''
+    ABIfile += '\n/* eslint-disable */'
+
     for (const [protocol, abis] of Object.entries(this.#abis)) {
       if (
         abis.length === 0
         || protocol === 'ERROR'
       ) continue
 
-      ABIfile += `\nexport const ${protocol}_ABIs = {`
+      ABIfile += `\n\nexport const ${protocol}_ABIs = {`
       for (const abi of abis) {
         ABIfile += `\n  ${abi.ContractName}: require('./abis/${abi.ContractName}.json'),`
 
