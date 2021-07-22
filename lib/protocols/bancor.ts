@@ -83,8 +83,8 @@ const IBancorNetwork = async(
 
 const Imports: TImports<SupportedImport>  = {
   IBANCORNETWORK: IBancorNetwork,
-  ERROR: async (d,s,n, p) => {
-    log.error(...colors.red(p), 'is not a valid Bancor import')
+  ERROR: async (d,s,n,p, a) => {
+    log.error(...colors.red(a), 'is not a valid Bancor import')
     return {
       Addresses: [], ABIs: []
     }
