@@ -51,7 +51,7 @@ describe(
   })
 
   it(
-  'Should call the BancorWriter function with an erroneous input, whilst omitting the npmPack',
+  'Should call the KyberWriter function with an erroneous input, whilst omitting the npmPack',
   async () => {
     const res = await KyberWriter(dir, solver, 'KOVAN', {
       protocol: 'KYBER',
