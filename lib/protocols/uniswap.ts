@@ -25,7 +25,7 @@ export const UniswapWriter = async (
 ).then(
   data => ({
     ...data,
-    Pack: ci.pack ? NPMPacks.UNISWAP.V2SDK : ['']
+    Pack: !ci.omitNpmPack ? NPMPacks.UNISWAP.V2SDK : ['']
   })
 )
 
