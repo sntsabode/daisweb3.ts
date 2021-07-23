@@ -2,3 +2,5 @@ node_modules
 dist
 battletest
 yarn-error.log
+.nyc_output
+coverage
