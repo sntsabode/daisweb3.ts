@@ -12,9 +12,9 @@ describe(
   })
 
   describe(
-  'Utils Test Suite',
+  'ProtocolFileWriter Test Suite',
   () => {
-    //require('./utils.test')
+    require('./protocol-writer.test')
   })
 
   describe(
