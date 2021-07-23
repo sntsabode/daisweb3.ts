@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -r ts-node/register tests/tests.test.ts --timeout 900000"
+    "test": "mocha -r ts-node/register tests/tests.test.ts --timeout 900000",
+    "test:coverage": "nyc mocha -r ts-node/register tests/tests.test.ts --timeout 900000"
   },
   "bin": {
     "daisweb3": "dist/index.cli.js"
@@ -18,6 +19,7 @@
     "yargs": "^4.6.0"
   },
   "devDependencies": {
+    "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@types/chai": "^4.2.21",
     "@types/chai-as-promised": "^7.1.4",
     "@types/cli-box": "^6.0.1",
@@ -31,8 +33,11 @@
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "eslint": "^7.31.0",
+    "ganache-cli": "^6.12.2",
     "mocha": "^9.0.2",
     "mock-fs": "^5.0.0",
+    "nyc": "^15.1.0",
+    "source-map-support": "^0.5.19",
     "ts-node": "^10.1.0",
     "typescript": "^4.3.5",
     "web3": "^1.4.0"
