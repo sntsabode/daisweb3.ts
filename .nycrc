@@ -5,6 +5,8 @@
     "html"
   ],
   "exclude": [
-    "**/dist"
+    "**/dist",
+    "**/tests",
+    "**/coverage"
   ]
 }
