@@ -66,7 +66,7 @@ const IKyberNetworkProxy = async (
 
 const Imports: TImports<SupportedImport> = {
   IKYBERNETWORKPROXY: IKyberNetworkProxy,
-  ERROR: async (d,s,n, p) => {
+  ERROR: async (d,s,n,a, p) => {
     log.error(...colors.red(p), 'is not a valid Kyber import')    
     return {
       Addresses: [], ABIs: []
