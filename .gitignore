@@ -4,3 +4,4 @@ battletest
 yarn-error.log
 .nyc_output
 coverage
+__test-work-dir__
