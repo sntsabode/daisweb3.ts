@@ -14,43 +14,37 @@ export const DaisConfig = `
       "protocol": "UNISWAP",
       "pack": "V2Router02",
       "omitNpmPack": true,
-      "abi": true,
-      "tsHelpers": true
+      "abi": true
     },
     {
       "protocol": "DYDX",
       "pack": "Flashloan",
       "omitNpmPack": true,
-      "abi": false,
-      "tsHelpers": true
+      "abi": false
     },
     {
       "protocol": "KYBER",
       "pack": "IKyberNetworkProxy",
       "omitNpmPack": true,
-      "abi": true,
-      "tsHelpers": true
+      "abi": true
     },
     {
       "protocol": "ONEINCH",
       "pack": "OneSplit",
       "omitNpmPack": true,
-      "abi": true,
-      "tsHelpers": true
+      "abi": true
     },
     {
       "protocol": "ONEINCH",
       "pack": "OneSplitMulti",
       "omitNpmPack": true,
-      "abi": true,
-      "tsHelpers": true
+      "abi": true
     },
     {
       "protocol": "BANCOR",
       "pack": "IBancorNetwork",
       "omitNpmPack": true,
-      "abi": true,
-      "tsHelpers": true
+      "abi": true
     }
   ],
 

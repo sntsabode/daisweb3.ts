@@ -3,7 +3,6 @@ export interface IContractImport {
   readonly pack: string
   readonly omitNpmPack: boolean
   readonly abi: boolean
-  readonly tsHelpers: boolean
 }
 
 export interface IDaisConfig {
