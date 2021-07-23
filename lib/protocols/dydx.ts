@@ -30,7 +30,7 @@ export const DyDxWriter = async (
 ).then(
   data => ({
     ...data,
-    Pack: !ci.omitNpmPack ?
+    Pack: !ci.omitNpmPack && data.PackOrNot ?
       NPMPacks.DYDX.V3Client : ['']
   }),
   e => { throw e }
@@ -89,7 +89,9 @@ const Flashloan = async (
       ContractName: 'ISoloMargin',
       // Find ABI
       ABI: ''
-    }] : []
+    }] : [],
+
+    PackOrNot: true
   }),
   e => { throw e }
 )
@@ -97,7 +99,7 @@ const Flashloan = async (
 const Imports: TImports<SupportedImport> = {
   FLASHLOAN: Flashloan,
   ERROR: async (d, s, n, a, p) => {
-    log.error(...colors.red(p), 'is not a valid DyDx import')
-    return { Addresses: [], ABIs: [] }
+    log.error('---', ...colors.red(p), 'is not a valid DyDx import')
+    return { Addresses: [], ABIs: [], PackOrNot: false }
   }
 }

@@ -25,7 +25,7 @@ export const UniswapWriter = async (
 ).then(
   data => ({
     ...data,
-    Pack: !ci.omitNpmPack ? NPMPacks.UNISWAP.V2SDK : ['']
+    Pack: !ci.omitNpmPack && data.PackOrNot ? NPMPacks.UNISWAP.V2SDK : ['']
   })
 )
 
@@ -90,7 +90,9 @@ const V2Router = async (
     ABIs: abi ? [IUniswapV2Router01ABI, {
       ContractName: 'IUniswapV2Router02',
       ABI: UniswapABIs.IUniswapV2Router02
-    }] : []
+    }] : [],
+
+    PackOrNot: true
   }),
 
   e => { throw e }
@@ -99,7 +101,7 @@ const V2Router = async (
 const Imports: TImports<SupportedImport> = {
   V2ROUTER02: V2Router,
   ERROR: async (d,s,n,a, p) => {
-    log.error(...colors.red(p), 'is not a valid Uniswap import')
-    return { Addresses: [], ABIs: [] }
+    log.error('---', ...colors.red(p), 'is not a valid Uniswap import')
+    return { Addresses: [], ABIs: [], PackOrNot: false }
   }
 }

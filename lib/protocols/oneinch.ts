@@ -25,7 +25,7 @@ export const OneInchWriter = async (
 ).then(
   data => ({
     ...data,
-    Pack: !ci.omitNpmPack ? (() => {
+    Pack: !ci.omitNpmPack && data.PackOrNot ? (() => {
       log.error('OneInch doesn\'t have an npm package relating to', ...colors.red(ci.pack))
       return ['']
     })() : ['']
@@ -63,7 +63,9 @@ const IOneSplit = async (
   ABIs: abi ? [{
     ContractName: 'IOneSplitMulti',
     ABI: OneInchABIs.IOneSplitMulti
-  }] : []
+  }] : [],
+
+  PackOrNot: false
 }), e => { throw e })
 
 const IOneSplitMulti = async (
@@ -89,14 +91,16 @@ const IOneSplitMulti = async (
   ABIs: abi ? [{
     ContractName: 'IOneSplitMulti',
     ABI: OneInchABIs.IOneSplitMulti
-  }] : []
+  }] : [],
+
+  PackOrNot: false
 }))
 
 const Imports: TImports<SupportedImport> = {
   ONESPLIT: IOneSplit,
   ONESPLITMULTI: IOneSplitMulti,
   ERROR: async (d,s,n,a, p) => {
-    log.error(...colors.red(p), 'is not a valid OneInch import')
-    return { Addresses: [], ABIs: [] }
+    log.error('---', ...colors.red(p), 'is not a valid OneInch import')
+    return { Addresses: [], ABIs: [], PackOrNot: false }
   }
 }

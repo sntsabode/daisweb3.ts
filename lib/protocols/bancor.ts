@@ -31,7 +31,7 @@ export const BancorWriter = async (
 ).then(
   data => ({
     ...data,
-    Pack: !ci.omitNpmPack ?
+    Pack: !ci.omitNpmPack && data.PackOrNot ?
       NPMPacks.BANCOR.SDK : ['']
   }),
   e => { throw e }
@@ -76,7 +76,9 @@ const IBancorNetwork = async(
     }, {
       ContractName: 'ContractRegistry',
       ABI: BancorABIs.ContractRegistryABI
-    }] : []
+    }] : [],
+
+    PackOrNot: true
   }),
   e => { throw e }
 )
@@ -84,9 +86,9 @@ const IBancorNetwork = async(
 const Imports: TImports<SupportedImport>  = {
   IBANCORNETWORK: IBancorNetwork,
   ERROR: async (d,s,n,p, a) => {
-    log.error(...colors.red(a), 'is not a valid Bancor import')
+    log.error('---', ...colors.red(a), 'is not a valid Bancor import')
     return {
-      Addresses: [], ABIs: []
+      Addresses: [], ABIs: [], PackOrNot: false
     }
   }
 }

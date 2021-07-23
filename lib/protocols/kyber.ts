@@ -24,7 +24,7 @@ export const KyberWriter = async (
 ).then(
   data => ({
     ...data,
-    Pack: !ci.omitNpmPack
+    Pack: !ci.omitNpmPack && data.PackOrNot
       ? (() => { 
         log.warning('Kyber does not have an npm package relating to', ci.pack)
         return ['']
@@ -61,15 +61,17 @@ const IKyberNetworkProxy = async (
   ABIs: abi ? [{
     ContractName: 'IKyberNetworkProxy',
     ABI: KyberABIs.IKyberNetworkProxyABI
-  }] : []
+  }] : [],
+
+  PackOrNot: true
 }))
 
 const Imports: TImports<SupportedImport> = {
   IKYBERNETWORKPROXY: IKyberNetworkProxy,
   ERROR: async (d,s,n,a, p) => {
-    log.error(...colors.red(p), 'is not a valid Kyber import')    
+    log.error('---', ...colors.red(p), 'is not a valid Kyber import')    
     return {
-      Addresses: [], ABIs: []
+      Addresses: [], ABIs: [], PackOrNot: false
     }
   }
 }
