@@ -75,11 +75,12 @@ interface IChildProcessReturn {
  * @param args 
  * @returns 
  */
-async function bootAndWaitForChildProcess(
+export async function bootAndWaitForChildProcess(
   cmd: string,
-  args: string[]
+  args: string[],
+  cwd?: string
 ): Promise<IChildProcessReturn> {
-  const child = spawn(cmd, args, { stdio: 'inherit' })
+  const child = spawn(cmd, args, { stdio: 'inherit', cwd: cwd })
   return new Promise((resolve, reject) => {
     child.on('error', err => reject(err))
     child.on('close', (code, signal) => resolve(
@@ -88,7 +89,7 @@ async function bootAndWaitForChildProcess(
   })
 }
 
-async function npminit(): Promise<void> {
+export async function npminit(): Promise<void> {
   console.log()
   log('Running', ...colors.yellow('npm init'))
   console.log()
@@ -99,7 +100,11 @@ async function npminit(): Promise<void> {
     )
 }
 
-async function git(git: boolean, dir: string): Promise<void> {
+export async function git(
+  git: boolean,
+  dir: string,
+  childWorkingDir?: string
+): Promise<void> {
   if (git) {
     console.log()
     log('Running', ...colors.yellow('git init'))
@@ -109,7 +114,7 @@ async function git(git: boolean, dir: string): Promise<void> {
       .catch(e => { throw e })
     // Could run these in a Promise.all() but that causes undefined
     // behaviour if 'writeGitFiles' throws an error
-    return bootAndWaitForChildProcess('git', ['init'])
+    return bootAndWaitForChildProcess('git', ['init'], childWorkingDir)
       .then(
         () => {/***/ },
         e => { throw e }
@@ -140,7 +145,11 @@ export async function tscInit(dir: string): Promise<void> {
 export async function mutatePackJson(dir: string): Promise<void> {
   dir = pathResolve(dir + '/package.json')
   const packjson = JSON.parse(readFileSync(dir).toString())
-  packjson.scripts.tsc = 'tsc'
+  if (packjson.scripts) 
+    packjson.scripts.tsc = 'tsc'
+  else
+    packjson.scripts = { tsc: 'tsc' }
+  
   packjson.main = '/lib/index.ts'
 
   return makeFile(dir, JSON.stringify(packjson))
@@ -233,11 +242,11 @@ export async function installDevDependencies(
  * @param deps 
  * @returns 
  */
-async function runInstallCommands(
+export async function runInstallCommands(
   packman: 'yarn' | 'npm',
   dev: boolean,
   deps: string[]
-) {
+): Promise<IChildProcessReturn> {
   const args = ['add', ...deps]
   if (dev) args.push('-D')
 
@@ -351,7 +360,7 @@ export async function Init(dir: string): Promise<void> {
  * @param dir 
  * @returns 
  */
-async function fetchdaisconfig(dir: string): Promise<IDaisConfig> {
+export async function fetchdaisconfig(dir: string): Promise<IDaisConfig> {
   return JSON.parse(
     readFileSync(pathResolve(dir + '/.daisconfig')).toString()
   )
