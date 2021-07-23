@@ -4,6 +4,8 @@ import chai, { assert, expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import { readFileSync } from 'fs'
 import { Uniswap } from '../../lib/files/contracts/__contracts__'
+import { Uniswap as UniswapABIs } from '../../lib/files/abis/__abis__'
+import { Addresses } from '../../lib/addresses'
 
 chai.use(chaiAsPromised).should()
 
@@ -24,8 +26,7 @@ describe(
       protocol: 'UNISWAP',
       pack: 'V2ROUTER02',
       omitNpmPack: false,
-      abi: true,
-      tsHelpers: true
+      abi: true
     })
 
     expect(res).to.have.property('ABIs')
@@ -36,10 +37,46 @@ describe(
     assert.isNotEmpty(res.Addresses)
     assert.isNotEmpty(res.Pack)
 
+    assert.strictEqual(
+      res.ABIs.some((abi) =>
+        abi.ContractName === 'IUniswapV2Router01'
+        && abi.ABI === UniswapABIs.IUniswapV2Router01
+      ),
+      true, 'ABIs IUniswapV2Router01'
+    )
+
+    assert.strictEqual(
+      res.ABIs.some((abi) =>
+        abi.ContractName === 'IUniswapV2Router02'
+        && abi.ABI === UniswapABIs.IUniswapV2Router02
+      ),
+      true, 'ABIs IUniswapV2Router02'
+    )
+
     for (const abi of res.ABIs) {
       assert.isString(abi.ABI)
       assert.isString(abi.ContractName)
     }
+
+    // TODO: assert all networks
+
+    assert.strictEqual(
+      res.Addresses.some((address) =>
+        address.Address === Addresses.UNISWAP.IUniswapV2Router01.MAINNET
+        && address.ContractName === 'IUniswapV2Router01'
+        && address.NET === 'MAINNET'  
+      ),
+      true, 'Addresses IUniswapV2Router01'
+    )
+
+    assert.strictEqual(
+      res.Addresses.some((address) =>
+        address.Address === Addresses.UNISWAP.IUniswapV2Router02.MAINNET
+        && address.ContractName === 'IUniswapV2Router02'
+        && address.NET === 'MAINNET'  
+      ),
+      true, 'Addresses IUniswapV2Router02'
+    )
 
     for (const address of res.Addresses) {
       assert.isString(address.Address)
@@ -64,8 +101,7 @@ describe(
       protocol: 'UNISWAP',
       pack: 'ibfuiewbgfiuw',
       omitNpmPack: true,
-      abi: true,
-      tsHelpers: true
+      abi: true
     })
 
     expect(res).to.have.property('Addresses')

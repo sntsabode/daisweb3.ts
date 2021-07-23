@@ -24,8 +24,7 @@ describe(
       protocol: 'ONEINCH',
       pack: 'ONESPLIT',
       omitNpmPack: true,
-      abi: true,
-      tsHelpers: true
+      abi: true
     })
 
     expect(res).to.have.property('ABIs')
@@ -57,8 +56,7 @@ describe(
       protocol: 'ONEINCH',
       pack: 'ONESPLITMULTI',
       omitNpmPack: true,
-      abi: true,
-      tsHelpers: true
+      abi: true
     })
 
     expect(res).to.have.property('ABIs')
@@ -93,8 +91,7 @@ describe(
         protocol: 'ONEINCH',
         pack: 'ibfuiewbgfiuw',
         omitNpmPack: true,
-        abi: true,
-        tsHelpers: true
+        abi: true
       })
   
       expect(res).to.have.property('Addresses')

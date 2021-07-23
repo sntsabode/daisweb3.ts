@@ -24,8 +24,7 @@ describe(
       protocol: 'KYBER',
       pack: 'IKYBERNETWORKPROXY',
       omitNpmPack: true,
-      abi: true,
-      tsHelpers: true
+      abi: true
     })
 
     expect(res).to.have.property('ABIs')
@@ -57,8 +56,7 @@ describe(
       protocol: 'KYBER',
       pack: 'ibfuiewbgfiuw',
       omitNpmPack: true,
-      abi: true,
-      tsHelpers: true
+      abi: true
     })
 
     expect(res).to.have.property('Addresses')

@@ -26,8 +26,7 @@ describe(
       protocol: 'DYDX',
       pack: 'FLASHLOAN',
       omitNpmPack: false,
-      abi: true,
-      tsHelpers: true
+      abi: true
     })
 
     expect(res).to.have.property('ABIs')
@@ -73,8 +72,7 @@ describe(
       protocol: 'DYDX',
       pack: 'ibfuiewbgfiuw',
       omitNpmPack: true,
-      abi: true,
-      tsHelpers: true
+      abi: true
     })
 
     expect(res).to.have.property('Addresses')

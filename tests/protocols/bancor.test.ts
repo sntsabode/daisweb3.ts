@@ -24,8 +24,7 @@ describe(
       protocol: 'BANCOR',
       pack: 'IBANCORNETWORK',
       omitNpmPack: false,
-      abi: true,
-      tsHelpers: true
+      abi: true
     })
 
     expect(res).to.have.property('ABIs')
@@ -64,8 +63,7 @@ describe(
       protocol: 'BANCOR',
       pack: 'ibfuiewbgfiuw',
       omitNpmPack: true,
-      abi: true,
-      tsHelpers: true
+      abi: true
     })
 
     expect(res).to.have.property('Addresses')
