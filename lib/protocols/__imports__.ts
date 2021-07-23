@@ -3,6 +3,7 @@ import { SupportedNetwork } from '../daisconfig'
 export interface IIndividualWriterReturn {
   Addresses: IAddressReturn[]
   ABIs: IABIReturn[]
+  PackOrNot: boolean
 }
 
 export interface IWriterReturn extends IIndividualWriterReturn {
