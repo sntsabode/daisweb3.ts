@@ -57,6 +57,30 @@ describe(
   })
 
   it(
+  'Should call the BancorWriter function with the "IBANCORNETWORK" options, omitting the abi',
+  async () => {
+    const res = await BancorWriter(dir, solver, 'MAINNET', {
+      protocol: 'BANCOR',
+      pack: 'IBANCORNETWORK',
+      omitNpmPack: false,
+      abi: false
+    })
+
+    expect(res).to.have.property('ABIs')
+    expect(res).to.have.property('Addresses')
+    expect(res).to.have.property('Pack')
+
+    assert.isEmpty(res.ABIs)
+    assert.strictEqual(res.Addresses.length, 1)
+
+    const IBancorNetwork = readFileSync('test-dir/contracts/interfaces/Bancor/IBancorNetwork.sol').toString()
+    assert.strictEqual(IBancorNetwork, Bancor.Interfaces.IBancorNetwork(solver))
+  
+    const IContractRegistry = readFileSync('test-dir/contracts/interfaces/Bancor/IContractRegistry.sol').toString()
+    assert.strictEqual(IContractRegistry, Bancor.Interfaces.IContractRegistry(solver))
+  })
+
+  it(
   'Should call the BancorWriter function with an erroneous input, whilst omitting the npmPack',
   async () => {
     const res = await BancorWriter(dir, solver, 'KOVAN', {
