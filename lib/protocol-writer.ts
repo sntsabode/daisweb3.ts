@@ -19,7 +19,7 @@ import { UniswapWriter } from './protocols/uniswap'
  * @param dir 
  * @returns 
  */
- const makeBaseDirs = async (
+export const makeBaseDirs = async (
   dir: string
 ): Promise<void[]> => Promise.all([
   makeDir(pathResolve(dir + '/contracts/interfaces')),
@@ -511,8 +511,11 @@ export class ProtocolFileWriter {
       log.error('---', ...colors.red(ci.protocol), 'is not a supported protocol')
 
       return {
-        ABIs: [], Addresses: [], Pack: ['']
+        ABIs: [], Addresses: [], Pack: [''], PackOrNot: false
       }
     }
   }
+
+  // Testing purposes
+  public readonly newInstance: () => ProtocolFileWriter = () => new ProtocolFileWriter()
 }
