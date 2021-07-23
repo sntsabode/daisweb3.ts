@@ -31,15 +31,15 @@ export const UniswapWriter = async (
 
 const IUniswapV2Router01AllAddresses: IAddressReturn[] = [{
   NET: 'KOVAN',
-  ContractName: 'IUniswapV2Router01.sol',
+  ContractName: 'IUniswapV2Router01',
   Address: Addresses.UNISWAP.IUniswapV2Router01.KOVAN
 }, {
   NET: 'ROPSTEN',
-  ContractName: 'IUniswapV2Router01.sol',
+  ContractName: 'IUniswapV2Router01',
   Address: Addresses.UNISWAP.IUniswapV2Router01.ROPSTEN
 }, {
   NET: 'MAINNET',
-  ContractName: 'IUniswapV2Router01.sol',
+  ContractName: 'IUniswapV2Router01',
   Address: Addresses.UNISWAP.IUniswapV2Router01.MAINNET
 }]
 
