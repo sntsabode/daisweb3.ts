@@ -20,6 +20,6 @@ describe(
   describe(
   'Main lib Test Suite',
   () => {
-    //require('./lib.test')
+    require('./lib.test')
   })
 })
