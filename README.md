@@ -544,9 +544,9 @@ interface IKyberNetworkProxy {
 <br><br/>
 <h1 align="center"><em><strong>ONEINCH</strong></em></h2>
 
-| Logo                                 | Support                                                                   | Imports                      |
-| :----------------------------------: | :-----------------------------------------------------------------------: | :--------------------------: |
-| <img src="./misc/img/1inch2.png"/> | <img src="https://img.shields.io/badge/OneInch-Supported-yellowgreen"/> | `OneInch`                        |
+| Logo                               | Support                                                                 | Imports                      |
+| :--------------------------------: | :---------------------------------------------------------------------: | :--------------------------: |
+| <img src="./misc/img/1inch2.png"/> | <img src="https://img.shields.io/badge/OneInch-Supported-yellowgreen"/> | `OneInch`, `OneInchMulti`    |
 
 > To use this service you have to call methods at [`OneSplitAudit`](https://github.com/CryptoManiacsZone/1inchProtocol/blob/master/contracts/OneSplitAudit.sol)
 >
