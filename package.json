@@ -1,18 +1,19 @@
 {
   "name": "daisweb3.ts",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "mocha -r ts-node/register tests/tests.test.ts --timeout 900000",
-    "test:coverage": "nyc mocha -r ts-node/register tests/tests.test.ts --timeout 900000"
+    "test:coverage": "nyc mocha -r ts-node/register tests/tests.test.ts --timeout 900000",
+    "format": "prettier --write \"lib/**/*.ts\" \"lib/**/*.js\""
   },
   "bin": {
     "daisweb3": "dist/index.cli.js"
   },
   "keywords": [],
-  "author": "snts.abode <snts.abode@gmail.com>",
-  "license": "ISC",
+  "author": "Sihle Masebuku <snts.abode@gmail.com>",
+  "license": "MIT",
   "dependencies": {
     "cli-box": "^6.0.10",
     "dotenv": "^10.0.0",
@@ -34,10 +35,12 @@
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "eslint": "^7.31.0",
+    "eslint-config-prettier": "^8.3.0",
     "ganache-cli": "^6.12.2",
     "mocha": "^9.0.2",
     "mock-fs": "^5.0.0",
     "nyc": "^15.1.0",
+    "prettier": "2.3.2",
     "source-map-support": "^0.5.19",
     "ts-node": "^10.1.0",
     "typescript": "^4.3.5",
