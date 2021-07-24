@@ -17,10 +17,11 @@ import { StdioOptions } from 'child_process'
  * the **.daisconfig** file
  * @param dir 
  */
-export async function Assemble(dir: string): Promise<void> {
-  const daisconfig = await fetchdaisconfig(dir)
-    .catch(e => { throw e })
-
+export async function Assemble(
+  daisconfig: IDaisConfig,
+  dir: string,
+  yes?: boolean
+): Promise<void> {
   // It's best these run sequentially
 
   const contractDeps = await ProtocolFileWriter.instance.main(
@@ -39,8 +40,13 @@ export async function Assemble(dir: string): Promise<void> {
     tscInit(dir)
   ]).catch(e => { throw e })
 
-  await npminit()
-    .catch(e => { throw e })
+  if (daisconfig.packman === 'yarn')
+    await yarninit(yes)
+      .catch(e => { throw e })
+
+  else if (daisconfig.packman === 'npm')
+    await npminit(yes)
+      .catch(e => { throw e })
 
   await mutatePackJson(dir)
     .catch(e => { throw e })
@@ -91,13 +97,29 @@ export async function bootAndWaitForChildProcess(
   })
 }
 
+export async function yarninit(
+  yes?: boolean,
+  cwd?: string,
+  stdio = 'inherit' as StdioOptions
+): Promise<IChildProcessReturn> {
+  console.log()
+  log('Running', ...colors.green('yarn init'))
+  console.log()
+
+  const args = ['init']
+  if (yes) args.push('-y')
+
+  return bootAndWaitForChildProcess('yarn', args, cwd, stdio)
+    .catch(e => { throw e })
+}
+
 export async function npminit(
   yes?: boolean, 
   cwd?: string,
   stdio = 'inherit' as StdioOptions
 ): Promise<void> {
   console.log()
-  log('Running', ...colors.yellow('npm init'))
+  log('Running', ...colors.green('npm init'))
   console.log()
   
   const args = ['init']
@@ -373,7 +395,18 @@ export async function Init(dir: string): Promise<void> {
  * @returns 
  */
 export async function fetchdaisconfig(dir: string): Promise<IDaisConfig> {
-  return JSON.parse(
-    readFileSync(pathResolve(dir + '/.daisconfig')).toString()
-  )
+  try {
+    return JSON.parse(
+      readFileSync(pathResolve(dir + '/.daisconfig')).toString()
+    )
+  } catch (e) {
+    const daisconfig = colors.blue('.daisconfig')[0]
+    log.withbox.error(`
+    ${daisconfig} file is missing
+    Run ${colors.green('daisweb3 --init')} to print a 
+    template ${daisconfig}
+    `, 50, 5)
+
+    throw e
+  }
 }
