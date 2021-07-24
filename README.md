@@ -24,7 +24,7 @@
 * yarn >=1.22.10 (not required)
 
 ## Installation
-***assuming rust is installed on your machine***
+***assuming node.js is installed on your machine***
 
 ### Install from source
 
@@ -36,6 +36,7 @@ git clone https://github.com/sntsabode/dais-web3.ts
 cd dais-web3.ts
 ```
 
+***assuming tsc command is available on your machine***
 ```Bash
 tsc
 ```
@@ -47,7 +48,18 @@ npm i -g
 ## Run tests
 
 ```sh
+mkdir a__test-work-dir___
+```
+Tests are a bit hacked together for the time being so please make sure to create a `a__test-work-dir` directory in the `dais-web3.ts` directory before running the test suite.
+
+```sh
 yarn run test
+```
+
+### Running single test suite
+
+```sh
+yarn run mocha -r ts-node/register ./<file> --timeout (recommend above 20s if you plan on running the yarn/npm add tests)
 ```
 
 ### Test Coverage
