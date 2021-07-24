@@ -8,6 +8,7 @@ import { Eslint, Ganache, Git, TS } from './files/configs/__configs__'
 import { Truffle as TruffleConfigs } from './files/configs/__configs__'
 import { readFileSync } from 'fs'
 import { ProtocolFileWriter } from './protocol-writer'
+import { StdioOptions } from 'child_process'
 
 /**
  * Main function
@@ -78,9 +79,10 @@ interface IChildProcessReturn {
 export async function bootAndWaitForChildProcess(
   cmd: string,
   args: string[],
-  cwd?: string
+  cwd?: string,
+  stdio = 'inherit' as StdioOptions
 ): Promise<IChildProcessReturn> {
-  const child = spawn(cmd, args, { stdio: 'inherit', cwd: cwd })
+  const child = spawn(cmd, args, { stdio, cwd: cwd })
   return new Promise((resolve, reject) => {
     child.on('error', err => reject(err))
     child.on('close', (code, signal) => resolve(
@@ -89,11 +91,19 @@ export async function bootAndWaitForChildProcess(
   })
 }
 
-export async function npminit(): Promise<void> {
+export async function npminit(
+  yes?: boolean, 
+  cwd?: string,
+  stdio = 'inherit' as StdioOptions
+): Promise<void> {
   console.log()
   log('Running', ...colors.yellow('npm init'))
   console.log()
-  return bootAndWaitForChildProcess('npm', ['init'])
+  
+  const args = ['init']
+  if (yes) args.push('-y')
+
+  return bootAndWaitForChildProcess('npm', args, cwd, stdio)
     .then(
       () => {/**/ },
       e => { throw e }
@@ -245,33 +255,35 @@ export async function installDevDependencies(
 export async function runInstallCommands(
   packman: 'yarn' | 'npm',
   dev: boolean,
-  deps: string[]
+  deps: string[],
+  cwd?: string,
+  stdio = 'inherit' as StdioOptions
 ): Promise<IChildProcessReturn> {
   const args = ['add', ...deps]
   if (dev) args.push('-D')
 
   switch (packman) {
     case 'yarn':
-      return bootAndWaitForChildProcess('yarn', args)
+      return bootAndWaitForChildProcess('yarn', args, cwd, stdio)
         .catch(e => { throw e })
 
     case 'npm':
-      return bootAndWaitForChildProcess('npm', args)
+      return bootAndWaitForChildProcess('npm', args, cwd, stdio)
         .catch(e => { throw e })
 
     default:
       log.error('Unsupported package manager')
       log.warning('Attempting yarn add')
-      return bootAndWaitForChildProcess('yarn', [
-        'add',
-        ...deps
-      ]).then(val => val, () => {
-        log.error(...colors.red('yarn add'), 'failed.')
-        log.warning('Attempting npm i')
+      return bootAndWaitForChildProcess('yarn', args, cwd, stdio).then(
+        val => val, 
+        async () => {
+          log.error(...colors.red('yarn add'), 'failed.')
+          log.warning('Attempting npm i')
 
-        return bootAndWaitForChildProcess('npm', args)
+          return bootAndWaitForChildProcess('npm', args, cwd, stdio)
           .catch(e => { throw e })
-      })
+        }
+      )
   }
 }
 
