@@ -11,10 +11,11 @@
     "daisweb3": "dist/index.cli.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "snts.abode <snts.abode@gmail.com>",
   "license": "ISC",
   "dependencies": {
     "cli-box": "^6.0.10",
+    "dotenv": "^10.0.0",
     "trash": "^7.2.0",
     "yargs": "^4.6.0"
   },
@@ -25,11 +26,11 @@
     "@types/cli-box": "^6.0.1",
     "@types/mocha": "^8.2.3",
     "@types/mock-fs": "^4.13.1",
-    "@types/node": "^16.4.0",
+    "@types/node": "^16.4.1",
     "@types/trash": "^5.0.1",
     "@types/yargs": "^15.0.13",
-    "@typescript-eslint/eslint-plugin": "^4.28.3",
-    "@typescript-eslint/parser": "^4.28.3",
+    "@typescript-eslint/eslint-plugin": "^4.28.4",
+    "@typescript-eslint/parser": "^4.28.4",
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "eslint": "^7.31.0",
@@ -41,5 +42,6 @@
     "ts-node": "^10.1.0",
     "typescript": "^4.3.5",
     "web3": "^1.4.0"
-  }
+  },
+  "repository": "https://github.com/sntsabode/dais-web3.ts"
 }
