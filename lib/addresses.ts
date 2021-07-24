@@ -2,7 +2,7 @@
 
 import { SupportedProtocol } from './daisconfig'
 
-type Addresses = {
+type Addresses_ = {
   [protocol in SupportedProtocol]: {
     [key: string]: {
       MAINNET: string
@@ -12,7 +12,7 @@ type Addresses = {
   }
 }
 
-export const Addresses = {
+export const Addresses: Addresses_ = {
   /**
    * Bancor contract addresses
    */
