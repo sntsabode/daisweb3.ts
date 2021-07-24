@@ -4,4 +4,5 @@ battletest
 yarn-error.log
 .nyc_output
 coverage
-__test-work-dir__
+a__test-work-dir__/yarn.lock
+a__test-work-dir__/package.json
