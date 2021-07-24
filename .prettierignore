@@ -1,0 +1,7 @@
+node_modules
+dist
+tests
+migrations
+coverage
+.nyc_output
+a__test-work-dir__
