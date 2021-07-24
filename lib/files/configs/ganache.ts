@@ -1,6 +1,7 @@
-export const ForkChain = (
-  ethNode: string
-): string => `
+/** @format */
+
+export const ForkChain = (ethNode: string): string =>
+  `
 /* eslint-disable */
 const ganache = require('ganache-cli')
 const Web3 = require('web3')

@@ -1,3 +1,5 @@
+/** @format */
+
 export interface IContractImport {
   readonly protocol: SupportedProtocol
   readonly pack: string
@@ -20,10 +22,7 @@ export interface IDaisConfig {
   readonly addedDevDependencies: string[]
 }
 
-export type SupportedNetwork =
-  | 'MAINNET'
-  | 'KOVAN'
-  | 'ROPSTEN'
+export type SupportedNetwork = 'MAINNET' | 'KOVAN' | 'ROPSTEN'
 
 export type SupportedProtocol =
   | 'BANCOR'

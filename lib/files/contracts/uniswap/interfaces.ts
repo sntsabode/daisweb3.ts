@@ -1,6 +1,7 @@
-export const IUniswapV2Router01 = (
-  solver: string
-): string => `
+/** @format */
+
+export const IUniswapV2Router01 = (solver: string): string =>
+  `
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=${solver};
 
@@ -164,9 +165,8 @@ interface IUniswapV2Router01 {
 }
 `.trim()
 
-export const IUniswapV2Router02 = (
-  solver: string
-): string => `
+export const IUniswapV2Router02 = (solver: string): string =>
+  `
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=${solver};
 

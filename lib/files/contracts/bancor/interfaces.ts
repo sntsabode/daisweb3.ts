@@ -1,6 +1,7 @@
-export const IBancorNetwork = (
-  solver: string
-): string => `
+/** @format */
+
+export const IBancorNetwork = (solver: string): string =>
+  `
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^${solver};
 
@@ -28,9 +29,8 @@ interface IBancorNetwork {
 }
 `.trim()
 
-export const IContractRegistry = (
-  solver: string
-): string => `
+export const IContractRegistry = (solver: string): string =>
+  `
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^${solver};
 

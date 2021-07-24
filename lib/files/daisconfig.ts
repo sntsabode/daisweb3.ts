@@ -1,3 +1,5 @@
+/** @format */
+
 export const DaisConfig = `
 {
   "solversion": "0.8.6",

@@ -1,6 +1,7 @@
-export const IKyberNetworkProxy = (
-  solver: string
-): string => `
+/** @format */
+
+export const IKyberNetworkProxy = (solver: string): string =>
+  `
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ${solver};
 

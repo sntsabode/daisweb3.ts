@@ -1,6 +1,7 @@
-export const IERC20 = (
-  solver: string
-): string => `
+/** @format */
+
+export const IERC20 = (solver: string): string =>
+  `
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ${solver};
 

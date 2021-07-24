@@ -1,3 +1,5 @@
+/** @format */
+
 export const InitialMigrationJS = `
 // eslint-disable-next-line
 const Migrations = artifacts.require('Migrations')

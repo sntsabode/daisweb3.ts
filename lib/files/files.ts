@@ -1,3 +1,5 @@
+/** @format */
+
 import * as Contracts from './contracts/__contracts__'
 export { Contracts }
 import * as ABIs from './abis/__abis__'

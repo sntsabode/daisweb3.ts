@@ -1,6 +1,7 @@
-export const ICallee = (
-  solver: string
-): string => `
+/** @format */
+
+export const ICallee = (solver: string): string =>
+  `
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^${solver};
 pragma experimental ABIEncoderV2;
@@ -12,9 +13,8 @@ interface ICallee {
 }
 `.trim()
 
-export const ISoloMargin = (
-  solver: string
-): string => `
+export const ISoloMargin = (solver: string): string =>
+  `
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^${solver};
 pragma experimental ABIEncoderV2;

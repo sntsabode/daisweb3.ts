@@ -1,3 +1,5 @@
+/** @format */
+
 export const eslintignore = `
 node_modules
 dist

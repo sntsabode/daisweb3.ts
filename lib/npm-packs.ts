@@ -1,3 +1,5 @@
+/** @format */
+
 export const NPMPacks = {
   UNISWAP: {
     V2SDK: [

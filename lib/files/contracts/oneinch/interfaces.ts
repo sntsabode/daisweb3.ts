@@ -1,6 +1,7 @@
-export const IOneSplit = (
-  solver: string
-): string => `
+/** @format */
+
+export const IOneSplit = (solver: string): string =>
+  `
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^${solver};
 
@@ -115,9 +116,8 @@ interface IOneSplit {
 }
 `.trim()
 
-export const IOneSplitMulti = (
-  solver: string
-): string => `
+export const IOneSplitMulti = (solver: string): string =>
+  `
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^${solver};
 

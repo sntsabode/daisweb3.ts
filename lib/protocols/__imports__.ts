@@ -1,3 +1,5 @@
+/** @format */
+
 import { SupportedNetwork } from '../daisconfig'
 
 export interface IIndividualWriterReturn {
@@ -21,7 +23,7 @@ export type IIndividualWriterFunc = (
 /**
  * Interface for the functions that write the required smart
  * contract files.
- * 
+ *
  */
 export type TImports<K extends string> = {
   readonly [protocol in K]: IIndividualWriterFunc

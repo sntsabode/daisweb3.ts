@@ -1,6 +1,7 @@
-export const Migrations = (
-  solver: string
-): string => `
+/** @format */
+
+export const Migrations = (solver: string): string =>
+  `
 // SPDX-License-Identifier: UNLICENSED
 // This file is part of Truffle suite and helps keep track of your deployments
 pragma solidity ${solver};

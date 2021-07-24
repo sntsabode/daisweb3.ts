@@ -1,6 +1,7 @@
-export const Account = (
-  solver: string
-): string => `
+/** @format */
+
+export const Account = (solver: string): string =>
+  `
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^${solver};
 
@@ -12,9 +13,8 @@ library Account {
 }
 `.trim()
 
-export const Actions = (
-  solver: string
-): string => `
+export const Actions = (solver: string): string =>
+  `
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^${solver};
 
@@ -36,9 +36,7 @@ library Actions {
 }
 `.trim()
 
-export const Types = (
-  solver: string
-): string => `
+export const Types = (solver: string): string => `
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^${solver};
 
@@ -55,9 +53,8 @@ library Types {
 }
 `
 
-export const FlashloanBoilerplate = (
-  solver: string
-): string => `
+export const FlashloanBoilerplate = (solver: string): string =>
+  `
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^${solver};
 pragma experimental ABIEncoderV2;

@@ -1,3 +1,5 @@
+/** @format */
+
 import * as TruffleConfigs from './truffle'
 export { TruffleConfigs as Truffle }
 import * as EslintConfigs from './eslint'

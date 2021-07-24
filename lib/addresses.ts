@@ -1,3 +1,5 @@
+/** @format */
+
 import { SupportedProtocol } from './daisconfig'
 
 type Addresses = {
