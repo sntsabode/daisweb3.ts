@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0 (4035a4f, 2020-05-01)"
+   sodipodi:docname="kyber-Icon.svg"
+   id="svg58"
+   version="1.1"
+   viewBox="0 0 256 256"
+   height="256"
+   width="256">
+  <metadata
+     id="metadata62">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>kyber-logo</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     inkscape:current-layer="kyber-logo"
+     inkscape:window-maximized="0"
+     inkscape:window-y="0"
+     inkscape:window-x="0"
+     inkscape:cy="12.461103"
+     inkscape:cx="-260.08886"
+     inkscape:zoom="0.47177639"
+     showgrid="false"
+     id="namedview60"
+     inkscape:window-height="820"
+     inkscape:window-width="1326"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+  <!-- Generator: Sketch 50.2 (55047) - http://www.bohemiancoding.com/sketch -->
+  <title
+     id="title10">kyber-logo</title>
+  <desc
+     id="desc12">Created with Sketch.</desc>
+  <defs
+     id="defs14" />
+  <g
+     id="Top-Menu-Login"
+     fill-rule="nonzero"
+     style="fill:none;stroke:none;stroke-width:1">
+    <g
+       id="kyber-logo">
+      <g
+         transform="matrix(3.8208955,0,0,3.8208955,38.208956,1.430021e-6)"
+         id="g95">
+        <path
+           fill="#31cb9e"
+           id="path47"
+           d="m 20,33.508557 25.029197,14.3175 C 45.908478,48.324978 47,47.689988 47,46.692147 V 20.309848 c 0,-1.012959 -1.091522,-1.63283 -1.970803,-1.13391 z" />
+        <path
+           fill="#31cb9e"
+           id="path49"
+           d="M 44.473259,12.835091 27.376903,0.26904937 C 26.58281,-0.31576644 25.446167,0.10410132 25.243751,1.0338085 L 19,29 44.317554,14.994411 c 0.840804,-0.464853 0.918657,-1.589499 0.155705,-2.15932" />
+        <path
+           fill="#31cb9e"
+           id="path51"
+           d="M 27.36083,66.73754 44.471728,54.168616 c 0.762906,-0.569951 0.685059,-1.694855 -0.140126,-2.159815 L 19,38 25.243376,65.972606 c 0.186834,0.92992 1.338978,1.334885 2.117454,0.764934" />
+        <path
+           fill="#31cb9e"
+           id="path53"
+           d="M 13.497138,33.007566 19.968574,2.5919233 C 20.223237,1.3964826 18.875021,0.53394943 17.91629,1.2754253 L 1.3482158,14.046969 C 0.49434578,14.697652 0,15.726639 0,16.801022 v 32.397956 c 0,1.074383 0.49434578,2.10337 1.3482158,2.754053 L 17.91629,64.724575 c 0.958731,0.741476 2.306947,-0.121058 2.052284,-1.316498 z" />
+      </g>
+    </g>
+  </g>
+</svg>
