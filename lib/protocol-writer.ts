@@ -140,11 +140,8 @@ export class ProtocolFileWriter {
   readonly #madeDirs: {
     [protocol in SupportedProtocol]: boolean
   } = (function () {
-    const protocolObject = <
-      {
-        [protocol in SupportedProtocol]: boolean
-      }
-    >{}
+    // prettier-ignore
+    const protocolObject = <{[protocol in SupportedProtocol]: boolean}>{}
     for (const protocol of SupportedProtocolsArray)
       protocolObject[protocol] = false
     return protocolObject
@@ -156,9 +153,9 @@ export class ProtocolFileWriter {
    * in the `/lib/addresses.ts` file
    */
   readonly #addresses: ProtocolFileWriterAddresses = (function () {
-    const obj: ProtocolFileWriterAddresses = (<
-      unknown
-    >{}) as ProtocolFileWriterAddresses
+    // prettier-ignore
+    const obj: ProtocolFileWriterAddresses = 
+      (<unknown>{}) as ProtocolFileWriterAddresses
     for (const protocol of SupportedProtocolsArray)
       obj[protocol] = {
         MAINNET: [],
@@ -187,8 +184,8 @@ export class ProtocolFileWriter {
   } & {
     ERROR: IABIReturn[]
   } = (function () {
-    const obj = <
-      { [protocol in SupportedProtocol]: IABIReturn[] } & {
+    // prettier-ignore
+    const obj = <{ [protocol in SupportedProtocol]: IABIReturn[] } & {
         ERROR: IABIReturn[]
       }
     >{}
@@ -198,6 +195,7 @@ export class ProtocolFileWriter {
     return obj
   })()
 
+  // prettier-ignore
   /**
    * Main contract writer entry point
    * @param dir
@@ -213,30 +211,27 @@ export class ProtocolFileWriter {
     contractImports: IContractImport[],
     solver: string,
     net: SupportedNetwork | 'all'
-  ): Promise<string[]> =>
-    makeBaseDirs(dir)
-      .then(
-        () => this.#work(solver, contractImports, dir, net),
-        e => {
-          throw e
-        }
-      )
-      .then(
-        val =>
-          Promise.all([
-            this.#buildABIFile(dir),
-            this.#buildAddressesFile(dir)
-          ]).then(
-            () => this.#makeDependenciesArray(val),
-            e => {
-              throw e
-            }
-          ),
+  ): Promise<string[]> => makeBaseDirs(dir)
+  .then(
+    () => this.#work(solver, contractImports, dir, net),
+    e => {
+      throw e
+    }
+  ).then(
+    val => Promise.all([
+      this.#buildABIFile(dir),
+      this.#buildAddressesFile(dir)
+    ]).then(
+      () => this.#makeDependenciesArray(val),
+      e => {
+        throw e
+      }
+    ),
 
-        e => {
-          throw e
-        }
-      )
+    e => {
+      throw e
+    }
+  )
 
   readonly #makeDependenciesArray = (depsParam: string[][]): string[] => {
     const deps: string[] = []
@@ -246,6 +241,7 @@ export class ProtocolFileWriter {
     return deps
   }
 
+  // prettier-ignore
   /**
    * Loops through the `contractImports` param and calls the respective
    * Writer function.
@@ -272,49 +268,40 @@ export class ProtocolFileWriter {
     contractImports: IContractImport[],
     dir: string,
     net: SupportedNetwork | 'all'
-  ): Promise<string[][]> =>
-    Promise.all(
-      contractImports.map(ci => {
-        let protocol = <SupportedProtocol | 'ERROR'>ci.protocol.toUpperCase()
-        protocol = !this.protocols[protocol] ? 'ERROR' : protocol
-        return this.protocols[protocol](dir, solver, net, ci).then(
-          val => {
-            val.ABIs.forEach(({ ContractName, ABI }) => {
-              if (
-                this.#abis[protocol].some(
-                  ({ ContractName: CN }) => ContractName === CN
-                )
-              )
-                return
+  ): Promise<string[][]> => Promise.all(contractImports.map(ci => {
+    let protocol = <SupportedProtocol | 'ERROR'>ci.protocol.toUpperCase()
+    protocol = !this.protocols[protocol] ? 'ERROR' : protocol
 
-              this.#abis[protocol].push({
-                ContractName,
-                ABI
-              })
-            })
+    return this.protocols[protocol](dir, solver, net, ci).then(val => {
+      val.ABIs.forEach(({ ContractName, ABI }) => {
+        if (this.#abis[protocol].some(
+          ({ ContractName: CN }) => ContractName === CN)
+        ) return
 
-            val.Addresses.forEach(({ NET, ...data }) => {
-              if (
-                this.#addresses[protocol][NET].some(
-                  ({ ...dat }) => dat.Address === data.Address
-                )
-              )
-                return
-
-              this.#addresses[protocol][NET].push({
-                ContractName: data.ContractName,
-                Address: data.Address
-              })
-            })
-
-            return val.Pack
-          },
-          e => {
-            throw e
-          }
-        )
+        this.#abis[protocol].push({
+          ContractName,
+          ABI
+        })
       })
-    )
+
+      val.Addresses.forEach(({ NET, ...data }) => {
+        if (this.#addresses[protocol][NET].some(
+          ({ ...dat }) => dat.Address === data.Address)
+        ) return
+
+        this.#addresses[protocol][NET].push({
+          ContractName: data.ContractName,
+          Address: data.Address
+        })
+      })
+
+      return val.Pack
+    },
+    
+    e => {
+      throw e
+    }
+  )}))
 
   /**
    * Builds the `abis.ts` file according to the abis selected in the
