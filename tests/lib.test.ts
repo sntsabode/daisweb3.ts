@@ -4,6 +4,7 @@ import chaiAsPromised from 'chai-as-promised'
 import { readdirSync, readFileSync, rmSync } from 'fs'
 import { resolve } from 'path'
 import {
+  Assemble,
   bootAndWaitForChildProcess,
   fetchdaisconfig,
   git,
@@ -15,11 +16,13 @@ import {
   writeEslintFiles,
   writeGanache,
   writeGitFiles,
-  writeTruffleFiles
+  writeTruffleFiles,
+  yarninit
 } from '../lib/lib'
 import { Eslint, Ganache, TS } from '../lib/files/configs/__configs__'
 import { TruffleConfig, InitialMigrationJS } from '../lib/files/configs/truffle'
 import { Truffle } from '../lib/files/contracts/__contracts__'
+import { makeDir } from '../lib/utils'
 
 chai.use(chaiAsPromised).should()
 
@@ -207,22 +210,82 @@ describe(
     })
 
     it(
+    'Should call the yarninit function',
+    async () => {
+      mock.restore()
+
+      await yarninit(true, childWorkingDir, 'ignore')
+    })
+
+    it(
     'Should call the runInstallCommands function',
     async () => {
       mock.restore()
 
-      await runInstallCommands('yarn', false, ['chalk'], childWorkingDir, 'ignore')
-      const yarnlock = readFileSync(resolve(childWorkingDir + '/yarn.lock')).toString()
-      assert.isNotEmpty(yarnlock)
+      await runInstallCommands('npm', false, ['chalk'], childWorkingDir, 'ignore')
+      const packagelockJSON = readFileSync(resolve(childWorkingDir + '/package-lock.json')).toString()
+      assert.isNotEmpty(packagelockJSON)
 
       const node_modulesEntries = readdirSync(resolve(childWorkingDir + '/node_modules'))
       assert.isNotEmpty(node_modulesEntries)
     })
 
+    it(
+    'Should call the Assemble function',
+    async () => {
+      mock.restore()
+
+      // Delete this and refactor ProtocolFileWriter to be able to
+      // be run more than once (this.#madeDirs.DYDX) in ProtcolFileWriter
+      // is set to true by the time this test runs causing undefined behaviour
+      await Promise.all([
+        makeDir(resolve(childWorkingDir + '/contracts/interfaces/DyDx')),
+        makeDir(resolve(childWorkingDir + '/contracts/libraries/DyDx')),
+      ])
+
+      // TODO : make assertions
+
+      await Assemble({
+        solversion: '0.8.6',
+        defaultNet: 'MAINNET',
+        eslint: true,
+        git: false,
+        contractWriteDir: '/contract-write-dir',
+        ganache: false,
+        packman: 'yarn',
+        omitTruffleHdWalletProvider: true,
+        ethNodeURL: 'ETH_NODE_URL',
+        contractImports: [{
+          protocol: 'DYDX',
+          pack: 'FLASHLOAN',
+          omitNpmPack: true,
+          abi: false
+        }],
+        addedDependencies: [],
+        addedDevDependencies: []
+      }, childWorkingDir, true)
+    })
+
     after(async () => {
-      rmSync(resolve(childWorkingDir + '/package.json'))
-      rmSync(resolve(childWorkingDir + '/yarn.lock'))
-      rmSync(resolve(childWorkingDir + '/node_modules'), { recursive: true })
+      function ignoreError(cb: () => void) {
+        try {
+          cb()
+        } catch (e) { }
+      }
+
+      ignoreError(() => rmSync(resolve(childWorkingDir + '/node_modules'), { recursive: true }))
+      ignoreError(() => rmSync(resolve(childWorkingDir + '/contracts'), { recursive: true }))
+      ignoreError(() => rmSync(resolve(childWorkingDir + '/lib'), { recursive: true }))
+      ignoreError(() => rmSync(resolve(childWorkingDir + '/migrations'), { recursive: true }))
+      ignoreError(() => rmSync(resolve(childWorkingDir + '/.eslintignore')))
+      ignoreError(() => rmSync(resolve(childWorkingDir + '/.eslintrc')))
+      ignoreError(() => rmSync(resolve(childWorkingDir + '/truffle-config.js')))
+      ignoreError(() => rmSync(resolve(childWorkingDir + '/tsconfig.json')))
+      
+
+      ignoreError(() => rmSync(resolve(childWorkingDir + '/yarn.lock')))
+      ignoreError(() => rmSync(resolve(childWorkingDir + '/package-lock.json')))
+      ignoreError(() => rmSync(resolve(childWorkingDir + '/package.json')))
     })
   })
 
