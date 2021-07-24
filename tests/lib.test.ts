@@ -1,7 +1,7 @@
 import mock from 'mock-fs'
 import chai, { assert, expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import { readdirSync, readFileSync } from 'fs'
+import { readdirSync, readFileSync, rmSync } from 'fs'
 import { resolve } from 'path'
 import {
   bootAndWaitForChildProcess,
@@ -9,6 +9,8 @@ import {
   git,
   Init,
   mutatePackJson,
+  npminit,
+  runInstallCommands,
   tscInit,
   writeEslintFiles,
   writeGanache,
@@ -21,7 +23,7 @@ import { Truffle } from '../lib/files/contracts/__contracts__'
 
 chai.use(chaiAsPromised).should()
 
-const childWorkingDir = resolve(process.cwd() + '/__test-work-dir__')
+const childWorkingDir = resolve(process.cwd() + '/a__test-work-dir__')
 
 describe(
 'Lib Test Suite',
@@ -33,7 +35,7 @@ describe(
       'migrations': { }
     },
 
-    '__test-work-dir__': { }
+    'a__test-work-dir__': { }
   }))
 
   it(
@@ -170,16 +172,58 @@ describe(
   it(
   'Should call the bootAndWaitForChildProcess function',
   async () => {
-    await bootAndWaitForChildProcess('ls', ['--l'], childWorkingDir)
+    const childpReturn = await bootAndWaitForChildProcess('ls', ['--l'], childWorkingDir)
+
+    expect(childpReturn).to.have.property('code')
+    expect(childpReturn).to.have.property('signal')
   })
 
   it(
   'Should call the git function',
   async () => {
-    // TODO: Make assertions
+    // TODO: Make git folder assertions
 
-    await git(false, 'test-dir', childWorkingDir)
-    await git(true, 'test-dir', childWorkingDir)
+    await git(false, childWorkingDir, childWorkingDir)
+    await git(true, childWorkingDir, childWorkingDir)
+
+    const gitignore = readFileSync(resolve(childWorkingDir + '/.gitignore')).toString()
+    assert.isNotEmpty(gitignore)
+
+    const gitattributes = readFileSync(resolve(childWorkingDir + '/.gitattributes')).toString()
+    assert.isNotEmpty(gitattributes)
+  })
+
+  describe(
+  'NPM and Dependencies Test Suite',
+  () => {
+    it(
+    'Should call the npminit function',
+    async () => {
+      mock.restore()
+      
+      await npminit(true, childWorkingDir, 'ignore')
+      const packjson = readFileSync(resolve(childWorkingDir + '/package.json')).toString()
+      assert.isObject(JSON.parse(packjson))
+    })
+
+    it(
+    'Should call the runInstallCommands function',
+    async () => {
+      mock.restore()
+
+      await runInstallCommands('yarn', false, ['chalk'], childWorkingDir, 'ignore')
+      const yarnlock = readFileSync(resolve(childWorkingDir + '/yarn.lock')).toString()
+      assert.isNotEmpty(yarnlock)
+
+      const node_modulesEntries = readdirSync(resolve(childWorkingDir + '/node_modules'))
+      assert.isNotEmpty(node_modulesEntries)
+    })
+
+    after(async () => {
+      rmSync(resolve(childWorkingDir + '/package.json'))
+      rmSync(resolve(childWorkingDir + '/yarn.lock'))
+      rmSync(resolve(childWorkingDir + '/node_modules'), { recursive: true })
+    })
   })
 
   afterEach(() => mock.restore())
