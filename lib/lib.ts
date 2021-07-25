@@ -22,7 +22,8 @@ import { StdioOptions } from 'child_process'
 export async function Assemble(
   daisconfig: IDaisConfig,
   dir: string,
-  yes?: boolean
+  yes?: boolean,
+  offline?: boolean
 ): Promise<void> {
   // It's best these run sequentially
 
@@ -45,14 +46,31 @@ export async function Assemble(
     throw e
   })
 
-  if (daisconfig.packman === 'yarn')
-    await yarninit(yes).catch(e => {
-      throw e
-    })
-  else if (daisconfig.packman === 'npm')
-    await npminit(yes).catch(e => {
-      throw e
-    })
+  switch (daisconfig.packman) {
+    // prettier-ignore
+    case 'yarn':
+      await yarninit(yes).catch(e => {
+        throw e
+      })
+    break;
+
+    // prettier-ignore
+    case 'npm':
+      await npminit(yes).catch(e => {
+        throw e
+      })
+    break;
+
+    // prettier-ignore
+    default:
+      log.withbox.error(`
+        Unsupported package manager... running ${colors.yellow('npm --init')[0]}
+      `)
+      await npminit(yes).catch(e => {
+        throw e
+      })
+    break;
+  }
 
   await mutatePackJson(dir).catch(e => {
     throw e
@@ -68,7 +86,8 @@ export async function Assemble(
     daisconfig.packman,
     daisconfig.eslint,
     daisconfig.ethNodeURL,
-    dir
+    dir,
+    offline
   ).catch(e => {
     throw e
   })
@@ -77,7 +96,8 @@ export async function Assemble(
     contractDeps,
     daisconfig.omitTruffleHdWalletProvider,
     daisconfig.packman,
-    daisconfig.addedDependencies
+    daisconfig.addedDependencies,
+    offline
   ).catch(e => {
     throw e
   })
@@ -215,9 +235,11 @@ export async function installDependencies(
   contractDeps: string[],
   omitTruffleHd: boolean,
   packman: 'yarn' | 'npm',
-  addedDeps: string[]
+  addedDeps: string[],
+  offline?: boolean
 ): Promise<IChildProcessReturn> {
   const deps = ['web3', 'dotenv']
+  const devInstall = false
 
   if (!omitTruffleHd) deps.push('@truffle/hdwallet-provider')
 
@@ -228,7 +250,7 @@ export async function installDependencies(
   log('Installing dependencies')
   console.log()
 
-  return runInstallCommands(packman, false, deps).catch(e => {
+  return runInstallCommands(packman, devInstall, deps, offline).catch(e => {
     throw e
   })
 }
@@ -247,9 +269,11 @@ export async function installDevDependencies(
   packman: 'yarn' | 'npm',
   eslint: boolean,
   ethNodeURL: string,
-  dir: string
+  dir: string,
+  offline?: boolean
 ): Promise<IChildProcessReturn> {
   const devDeps = ['typescript', 'ts-node', '@types/node']
+  const devInstall = true
 
   if (ganache) {
     await writeGanache(dir, ethNodeURL).catch(e => {
@@ -279,7 +303,7 @@ export async function installDevDependencies(
   log('Installing dev dependencies')
   console.log()
 
-  return runInstallCommands(packman, true, devDeps).catch(e => {
+  return runInstallCommands(packman, devInstall, devDeps, offline).catch(e => {
     throw e
   })
 }
@@ -295,11 +319,13 @@ export async function runInstallCommands(
   packman: 'yarn' | 'npm',
   dev: boolean,
   deps: string[],
+  offline?: boolean,
   cwd?: string,
   stdio = 'inherit' as StdioOptions
 ): Promise<IChildProcessReturn> {
   const args = ['add', ...deps]
   if (dev) args.push('-D')
+  if (offline) args.push('--offline')
 
   switch (packman) {
     case 'yarn':
