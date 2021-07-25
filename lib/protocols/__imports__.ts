@@ -1,14 +1,11 @@
 /** @format */
 
-import { SupportedNetwork } from '../daisconfig'
+import { SupportedNetwork, SupportedProtocol } from '../daisconfig'
+import { colors, log } from '../utils'
 
-export interface IIndividualWriterReturn {
+export interface IWriterReturn {
   Addresses: IAddressReturn[]
   ABIs: IABIReturn[]
-  PackOrNot: boolean
-}
-
-export interface IWriterReturn extends IIndividualWriterReturn {
   Pack: string[]
 }
 
@@ -17,8 +14,9 @@ export type IIndividualWriterFunc = (
   solver: string,
   net: SupportedNetwork | 'all',
   abi: boolean,
+  omitNpmPack: boolean,
   pack: string
-) => Promise<IIndividualWriterReturn>
+) => Promise<IWriterReturn>
 
 /**
  * Interface for the functions that write the required smart
@@ -40,4 +38,19 @@ export interface IAddressReturn {
   NET: SupportedNetwork
   ContractName: string
   Address: string
+}
+
+export function npmPackError(
+  omitNpmPack: boolean,
+  pack: string,
+  protocol: SupportedProtocol
+): string[] {
+  if (omitNpmPack)
+    return []
+
+  log.error(
+    `${protocol} doesn't have an npm package relating to`,
+    ...colors.red(pack)
+  )
+  return []
 }

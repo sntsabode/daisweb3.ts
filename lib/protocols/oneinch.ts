@@ -4,8 +4,8 @@ import { IContractImport, SupportedNetwork } from '../daisconfig'
 import { colors, log, makeFile } from '../utils'
 import {
   IAddressReturn,
-  IIndividualWriterReturn,
   IWriterReturn,
+  npmPackError,
   TImports
 } from './__imports__'
 import { resolve as pathResolve } from 'path'
@@ -15,33 +15,22 @@ import { OneInch as OneInchABIs } from '../files/abis/__abis__'
 
 type SupportedImport = 'ONESPLIT' | 'ONESPLITMULTI'
 
+// prettier-ignore
 export const OneInchWriter = async (
   dir: string,
   solver: string,
   net: SupportedNetwork | 'all',
   ci: IContractImport
-): Promise<IWriterReturn> =>
-  Imports[
-    (() => {
-      const pack = ci.pack.toUpperCase() as SupportedImport
-      if (!Imports[pack]) return 'ERROR'
-      return pack
-    })()
-  ](dir, solver, net, ci.abi, ci.pack).then(data => ({
-    ...data,
-    Pack:
-      !ci.omitNpmPack && data.PackOrNot
-        ? (() => {
-            log.error(
-              "OneInch doesn't have an npm package relating to",
-              ...colors.red(ci.pack)
-            )
-            return ['']
-          })()
-        : ['']
-  }))
+): Promise<IWriterReturn> => Imports[
+  (() => {
+    const pack = ci.pack.toUpperCase() as SupportedImport
+    if (!Imports[pack]) return 'ERROR'
+    return pack
+  })()
+](dir, solver, net, ci.abi, ci.omitNpmPack, ci.pack)
+  .catch(e => { throw e })
 
-const AllAddresses: IAddressReturn[] = [
+const AllOneSplitAuditAddresses: IAddressReturn[] = [
   {
     NET: 'KOVAN',
     ContractName: 'OneSplitAudit',
@@ -59,64 +48,22 @@ const AllAddresses: IAddressReturn[] = [
   }
 ]
 
+// prettier-ignore
 const IOneSplit = async (
   dir: string,
   solver: string,
   net: SupportedNetwork | 'all',
-  abi: boolean
-): Promise<IIndividualWriterReturn> =>
-  makeFile(
-    pathResolve(dir + '/contracts/interfaces/OneInch/IOneSplit.sol'),
-    OneInch.Interfaces.IOneSplit(solver)
-  ).then(
-    () => ({
-      Addresses:
-        net === 'all'
-          ? AllAddresses
-          : [
-              {
-                NET: net,
-                ContractName: 'OneSplitAudit',
-                Address: Addresses.ONEINCH.OneSplitAudit[net]
-              }
-            ],
-
-      ABIs: abi
-        ? [
-            {
-              ContractName: 'IOneSplitMulti',
-              ABI: OneInchABIs.IOneSplitMulti
-            }
-          ]
-        : [],
-
-      PackOrNot: false
-    }),
-    e => {
-      throw e
-    }
-  )
-
-const IOneSplitMulti = async (
-  dir: string,
-  solver: string,
-  net: SupportedNetwork | 'all',
-  abi: boolean
-): Promise<IIndividualWriterReturn> =>
-  Promise.all([
-    makeFile(
-      pathResolve(dir + '/contracts/interfaces/OneInch/IOneSplit.sol'),
-      OneInch.Interfaces.IOneSplit(solver)
-    ),
-
-    makeFile(
-      pathResolve(dir + '/contracts/interfaces/OneInch/IOneSplitMulti.sol'),
-      OneInch.Interfaces.IOneSplitMulti(solver)
-    )
-  ]).then(() => ({
+  abi: boolean,
+  omitNpmPack: boolean,
+  pack: string
+): Promise<IWriterReturn> => makeFile(
+  pathResolve(dir + '/contracts/interfaces/OneInch/IOneSplit.sol'),
+  OneInch.Interfaces.IOneSplit(solver)
+).then(
+  () => ({
     Addresses:
       net === 'all'
-        ? AllAddresses
+        ? AllOneSplitAuditAddresses
         : [
             {
               NET: net,
@@ -134,14 +81,72 @@ const IOneSplitMulti = async (
         ]
       : [],
 
-    PackOrNot: false
-  }))
+    Pack: (() => {
+      if (omitNpmPack)
+        return []
+
+      log.error(
+        "OneInch doesn't have an npm package relating to",
+        ...colors.red(pack)
+      )
+      return []
+    })()
+  }),
+  e => {
+    throw e
+  }
+)
+
+// prettier-ignore
+const IOneSplitMulti = async (
+  dir: string,
+  solver: string,
+  net: SupportedNetwork | 'all',
+  abi: boolean,
+  omitNpmPack: boolean,
+  pack: string
+): Promise<IWriterReturn> => Promise.all([
+  makeFile(
+    pathResolve(dir + '/contracts/interfaces/OneInch/IOneSplit.sol'),
+    OneInch.Interfaces.IOneSplit(solver)
+  ),
+
+  makeFile(
+    pathResolve(dir + '/contracts/interfaces/OneInch/IOneSplitMulti.sol'),
+    OneInch.Interfaces.IOneSplitMulti(solver)
+  )
+]).then(() => ({
+  Addresses:
+    net === 'all'
+      ? AllOneSplitAuditAddresses
+      : [
+          {
+            NET: net,
+            ContractName: 'OneSplitAudit',
+            Address: Addresses.ONEINCH.OneSplitAudit[net]
+          }
+        ],
+
+  ABIs: abi
+    ? [
+        {
+          ContractName: 'IOneSplitMulti',
+          ABI: OneInchABIs.IOneSplitMulti
+        }
+      ]
+    : [],
+
+  Pack: npmPackError(omitNpmPack, pack, 'ONEINCH')
+}),
+e => {
+  throw e
+})
 
 const Imports: TImports<SupportedImport> = {
   ONESPLIT: IOneSplit,
   ONESPLITMULTI: IOneSplitMulti,
-  ERROR: async (d, s, n, a, p) => {
+  ERROR: async (d,s,n,a,o, p) => {
     log.error('---', ...colors.red(p), 'is not a valid OneInch import')
-    return { Addresses: [], ABIs: [], PackOrNot: false }
+    return { Addresses: [], ABIs: [], Pack: [] }
   }
 }

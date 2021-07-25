@@ -5,7 +5,6 @@ import { colors, log, makeFile } from '../utils'
 import {
   IABIReturn,
   IAddressReturn,
-  IIndividualWriterReturn,
   IWriterReturn,
   TImports
 } from './__imports__'
@@ -17,22 +16,20 @@ import { NPMPacks } from '../npm-packs'
 
 export type SupportedImport = 'V2ROUTER02'
 
+// prettier-ignore
 export const UniswapWriter = async (
   dir: string,
   solver: string,
   net: SupportedNetwork | 'all',
   ci: IContractImport
-): Promise<IWriterReturn> =>
-  Imports[
-    (() => {
-      const pack = ci.pack.toUpperCase() as SupportedImport
-      if (!Imports[pack]) return 'ERROR'
-      return pack
-    })()
-  ](dir, solver, net, ci.abi, ci.pack).then(data => ({
-    ...data,
-    Pack: !ci.omitNpmPack && data.PackOrNot ? NPMPacks.UNISWAP.V2SDK : ['']
-  }))
+): Promise<IWriterReturn> => Imports[
+  (() => {
+    const pack = ci.pack.toUpperCase() as SupportedImport
+    if (!Imports[pack]) return 'ERROR'
+    return pack
+  })()
+](dir, solver, net, ci.abi, ci.omitNpmPack, ci.pack)
+  .catch(e => { throw e })
 
 const IUniswapV2Router01AllAddresses: IAddressReturn[] = [
   {
@@ -57,79 +54,85 @@ const IUniswapV2Router01ABI: IABIReturn = {
   ContractName: 'IUniswapV2Router01'
 }
 
+// prettier-ignore
 const V2Router = async (
   dir: string,
   solver: string,
   net: SupportedNetwork | 'all',
-  abi: boolean
-): Promise<IIndividualWriterReturn> =>
-  Promise.all([
-    makeFile(
-      pathResolve(dir + '/contracts/interfaces/Uniswap/IUniswapV2Router01.sol'),
-      Uniswap.Interfaces.IUniswapV2Router01(solver)
-    ),
+  abi: boolean,
+  omitNpmPack: boolean
+): Promise<IWriterReturn> => Promise.all([
+  makeFile(
+    pathResolve(dir + '/contracts/interfaces/Uniswap/IUniswapV2Router01.sol'),
+    Uniswap.Interfaces.IUniswapV2Router01(solver)
+  ),
 
-    makeFile(
-      pathResolve(dir + '/contracts/interfaces/Uniswap/IUniswapV2Router02.sol'),
-      Uniswap.Interfaces.IUniswapV2Router02(solver)
-    )
-  ]).then(
-    () => ({
-      Addresses:
-        net === 'all'
-          ? [
-              ...IUniswapV2Router01AllAddresses,
-              {
-                NET: 'KOVAN',
-                ContractName: 'IUniswapV2Router02',
-                Address: Addresses.UNISWAP.IUniswapV2Router02.KOVAN
-              },
-              {
-                NET: 'ROPSTEN',
-                ContractName: 'IUniswapV2Router02',
-                Address: Addresses.UNISWAP.IUniswapV2Router02.ROPSTEN
-              },
-              {
-                NET: 'MAINNET',
-                ContractName: 'IUniswapV2Router02',
-                Address: Addresses.UNISWAP.IUniswapV2Router02.MAINNET
-              }
-            ]
-          : [
-              {
-                NET: net,
-                ContractName: 'IUniswapV2Router01',
-                Address: Addresses.UNISWAP.IUniswapV2Router01[net]
-              },
-              {
-                NET: net,
-                ContractName: 'IUniswapV2Router02',
-                Address: Addresses.UNISWAP.IUniswapV2Router02[net]
-              }
-            ],
-
-      ABIs: abi
+  makeFile(
+    pathResolve(dir + '/contracts/interfaces/Uniswap/IUniswapV2Router02.sol'),
+    Uniswap.Interfaces.IUniswapV2Router02(solver)
+  )
+]).then(
+  () => ({
+    Addresses:
+      net === 'all'
         ? [
-            IUniswapV2Router01ABI,
+            ...IUniswapV2Router01AllAddresses,
             {
+              NET: 'KOVAN',
               ContractName: 'IUniswapV2Router02',
-              ABI: UniswapABIs.IUniswapV2Router02
+              Address: Addresses.UNISWAP.IUniswapV2Router02.KOVAN
+            },
+            {
+              NET: 'ROPSTEN',
+              ContractName: 'IUniswapV2Router02',
+              Address: Addresses.UNISWAP.IUniswapV2Router02.ROPSTEN
+            },
+            {
+              NET: 'MAINNET',
+              ContractName: 'IUniswapV2Router02',
+              Address: Addresses.UNISWAP.IUniswapV2Router02.MAINNET
             }
           ]
-        : [],
+        : [
+            {
+              NET: net,
+              ContractName: 'IUniswapV2Router01',
+              Address: Addresses.UNISWAP.IUniswapV2Router01[net]
+            },
+            {
+              NET: net,
+              ContractName: 'IUniswapV2Router02',
+              Address: Addresses.UNISWAP.IUniswapV2Router02[net]
+            }
+          ],
 
-      PackOrNot: true
-    }),
+    ABIs: abi
+      ? [
+          IUniswapV2Router01ABI,
+          {
+            ContractName: 'IUniswapV2Router02',
+            ABI: UniswapABIs.IUniswapV2Router02
+          }
+        ]
+      : [],
 
-    e => {
-      throw e
-    }
-  )
+    Pack: (() => {
+      if (omitNpmPack)
+        return []
+
+      return NPMPacks.UNISWAP.V2SDK
+    })()
+  }),
+
+  e => {
+    throw e
+  }
+)
 
 const Imports: TImports<SupportedImport> = {
   V2ROUTER02: V2Router,
-  ERROR: async (d, s, n, a, p) => {
+  ERROR: async (d,s,n,a,o, p) => {
     log.error('---', ...colors.red(p), 'is not a valid Uniswap import')
-    return { Addresses: [], ABIs: [], PackOrNot: false }
+    return { Addresses: [], ABIs: [], Pack: [] }
   }
 }
