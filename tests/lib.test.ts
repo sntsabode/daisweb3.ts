@@ -26,7 +26,7 @@ import { makeDir } from '../lib/utils'
 
 chai.use(chaiAsPromised).should()
 
-const childWorkingDir = resolve(process.cwd() + '/a__test-work-dir__')
+const childWorkingDir = resolve(process.cwd() + '/.atestdir')
 
 describe(
 'Lib Test Suite',
@@ -38,7 +38,7 @@ describe(
       'migrations': { }
     },
 
-    'a__test-work-dir__': { }
+    '.atestdir': { }
   }))
 
   it(
@@ -222,7 +222,7 @@ describe(
     async () => {
       mock.restore()
 
-      await runInstallCommands('npm', false, ['chalk'], childWorkingDir, 'ignore')
+      await runInstallCommands('npm', false, ['chalk'], false, childWorkingDir, 'ignore')
       const packagelockJSON = readFileSync(resolve(childWorkingDir + '/package-lock.json')).toString()
       assert.isNotEmpty(packagelockJSON)
 
