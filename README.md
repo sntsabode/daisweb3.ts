@@ -51,9 +51,9 @@ npm i -g
 ## Run tests
 
 ```sh
-mkdir a__test-work-dir___
+mkdir .atestdir
 ```
-Tests are a bit hacked together for the time being so please make sure to create a `a__test-work-dir` directory in the `dais-web3.ts` directory before running the test suite.
+Tests are a bit hacked together for the time being so please make sure to create a `.atestdir` directory in the `dais-web3.ts` directory before running the test suite.
 
 ```sh
 yarn run test
@@ -86,6 +86,7 @@ daisweb3 <options>
 * `-i` or `--init`: Writes a template .daisconfig file.
 * `-a` or `--assemble`: Writes the boilerplate.
 * `-y` or `--yes`: Run without asking any questions (will still ask on `--purge`)
+* `-o` or `--offline`: Runs ***yarn***/***npm*** add with the ***offline*** flag
 * `-c` or `--confirm`: Confirm the command
 
 ***
