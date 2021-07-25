@@ -96,8 +96,7 @@ describe(
 
     assert.isEmpty(res.ABIs)
     assert.isEmpty(res.Addresses)
-    assert.strictEqual(res.Pack.length, 1)
-    assert.strictEqual(res.Pack[0], '')
+    assert.strictEqual(res.Pack.length, 0)
 
     await new Promise<void>((resolve, reject) => {
       try {
