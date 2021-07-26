@@ -1,7 +1,7 @@
 import mock from 'mock-fs'
 import chai, { assert, expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import { readdirSync, readFileSync, rmSync } from 'fs'
+import { mkdirSync, readdirSync, readFileSync, rmSync } from 'fs'
 import { resolve } from 'path'
 import {
   Assemble,
@@ -199,6 +199,12 @@ describe(
   describe(
   'NPM and Dependencies Test Suite',
   () => {
+    before(() => {
+      mock.restore()
+
+      mkdirSync(childWorkingDir, { recursive: true })
+    })
+
     it(
     'Should call the npminit function',
     async () => {
