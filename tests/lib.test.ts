@@ -6,6 +6,7 @@ import { resolve } from 'path'
 import {
   Assemble,
   bootAndWaitForChildProcess,
+  dotenv,
   fetchdaisconfig,
   git,
   Init,
@@ -57,6 +58,15 @@ describe(
     try {
       mkdirSync(resolve(childWorkingDir))
     } catch (e) { }
+  })
+
+  it(
+  'Should call the dotenv function',
+  async () => {
+    await dotenv('ETH_NODE_URL', childWorkingDir)
+
+    const envFile = file('/.env')
+    assert.strictEqual(envFile, 'ETH_NODE_URL=ETH_NODE_URL')
   })
 
   it(
@@ -115,34 +125,34 @@ describe(
   it(
   'Should call the writeGitFiles function',
   async () => {
-    await writeGitFiles('test-dir')
+    await writeGitFiles(childWorkingDir)
 
-    const gitignore = readFileSync(resolve('test-dir/.gitignore')).toString()
+    const gitignore = file('/.gitignore')
     assert.isNotEmpty(gitignore)
 
-    const gitattributes = readFileSync(resolve('test-dir/.gitattributes')).toString()
+    const gitattributes = file('/.gitattributes')
     assert.isNotEmpty(gitattributes)
   })
 
   it(
   'Should call the writeEslintFiles function',
   async () => {
-    await writeEslintFiles('test-dir')
+    await writeEslintFiles(childWorkingDir)
 
-    const eslintignore = readFileSync(resolve('test-dir/.eslintignore')).toString()
+    const eslintignore = file('/.eslintignore')
     assert.strictEqual(eslintignore, Eslint.eslintignore)
 
-    const eslintrc = readFileSync(resolve('test-dir/.eslintrc')).toString()
+    const eslintrc = file('/.eslintrc')
     assert.strictEqual(eslintrc, Eslint.eslintrc)
   })
 
   it(
   'Should call the writeGanache function',
   async () => {
-    await writeGanache('test-dir', 'ETH_NODE_URL')
+    await writeGanache(childWorkingDir)
 
-    const forkChainJS = readFileSync(resolve('test-dir/fork-chain.js')).toString()
-    assert.strictEqual(forkChainJS, Ganache.ForkChain('ETH_NODE_URL'))
+    const forkChainJS = file('/fork-chain.js')
+    assert.strictEqual(forkChainJS, Ganache.ForkChain)
   })
 
   it(
@@ -319,6 +329,9 @@ describe(
       expect(packjson.scripts).to.have.property('tsc')
 
       assert.strictEqual(packjson.scripts.tsc, 'tsc')
+
+      const envFile = file('/.env')
+      assert.strictEqual(envFile, 'ETH_NODE_URL=ETH_NODE_URL')
 
       const eslintrc = file('/.eslintrc')
       assert.strictEqual(eslintrc, Eslint.eslintrc)
