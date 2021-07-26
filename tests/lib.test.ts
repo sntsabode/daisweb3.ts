@@ -21,12 +21,14 @@ import {
 } from '../lib/lib'
 import { Eslint, Ganache, TS } from '../lib/files/configs/__configs__'
 import { TruffleConfig, InitialMigrationJS } from '../lib/files/configs/truffle'
-import { Truffle } from '../lib/files/contracts/__contracts__'
+import { DyDx, Truffle } from '../lib/files/contracts/__contracts__'
 import { makeDir } from '../lib/utils'
+import { Migrations } from '../lib/files/contracts/truffle/libraries'
 
 chai.use(chaiAsPromised).should()
 
-const childWorkingDir = resolve(process.cwd() + '/.atestdir')
+const childWorkingDir = resolve(process.cwd() + '/atestdir')
+const file = (path: string) => readFileSync(childWorkingDir + path).toString()
 
 describe(
 'Lib Test Suite',
@@ -38,7 +40,7 @@ describe(
       'migrations': { }
     },
 
-    '.atestdir': { }
+    'atestdir': { }
   }))
 
   it(
@@ -207,7 +209,8 @@ describe(
   () => {
     before(() => {
       mock.restore()
-
+      // Clean slate
+      rmSync(childWorkingDir, { recursive: true })
       mkdirSync(childWorkingDir, { recursive: true })
     })
 
@@ -216,9 +219,10 @@ describe(
     async () => {
       mock.restore()
       
-      // TODO: make assertions
-
       await npminit(true, childWorkingDir, 'ignore')
+
+      const packjson = JSON.parse(file('/package.json'))
+      assert.isNotEmpty(packjson)
     })
 
     it(
@@ -227,6 +231,9 @@ describe(
       mock.restore()
 
       await yarninit(true, childWorkingDir, 'ignore')
+
+      const packjson = JSON.parse(file('/package.json'))
+      assert.isNotEmpty(packjson)
     })
 
     it(
@@ -247,6 +254,8 @@ describe(
     async () => {
       mock.restore()
 
+      const solver = '0.8.6'
+
       // Delete this and refactor ProtocolFileWriter to be able to
       // be run more than once (this.#madeDirs.DYDX) in ProtcolFileWriter
       // is set to true by the time this test runs causing undefined behaviour
@@ -258,7 +267,7 @@ describe(
       // TODO : make assertions
 
       await Assemble({
-        solversion: '0.8.6',
+        solversion: solver,
         defaultNet: 'MAINNET',
         eslint: true,
         git: false,
@@ -276,6 +285,62 @@ describe(
         addedDependencies: [],
         addedDevDependencies: []
       }, childWorkingDir, true)
+
+      const packjson = JSON.parse(file('/package.json'))
+      assert.isNotEmpty(packjson)
+
+      expect(packjson).to.have.property('dependencies')
+      assert.isNotEmpty(packjson.dependencies)
+
+      expect(packjson).to.have.property('devDependencies')
+      assert.isNotEmpty(packjson.devDependencies)
+
+      expect(packjson).to.have.property('scripts')
+      expect(packjson.scripts).to.have.property('tsc')
+
+      assert.strictEqual(packjson.scripts.tsc, 'tsc')
+
+      const eslintrc = file('/.eslintrc')
+      assert.strictEqual(eslintrc, Eslint.eslintrc)
+
+      const eslintignore = file('/.eslintignore')
+      assert.strictEqual(eslintignore, Eslint.eslintignore)
+
+      const truffleConfig = file('/truffle-config.js')
+      assert.strictEqual(truffleConfig, TruffleConfig(solver, '/contract-write-dir'))
+
+      const Migrations_ = file('/contracts/Migrations.sol')
+      assert.strictEqual(Migrations_, Migrations(solver))
+
+      const initialMigrationJS = file('/migrations/1_initial_migration.js')
+      assert.strictEqual(initialMigrationJS, InitialMigrationJS)
+
+      const tsconfig = file('/tsconfig.json')
+      assert.strictEqual(tsconfig, TS.tsconfig)
+
+      const node_modules = readdirSync(childWorkingDir + '/node_modules')
+      assert.isNotEmpty(node_modules)
+
+      const yarnlock = file('/yarn.lock')
+      assert.isNotEmpty(yarnlock)
+
+      const ICallee = file('/contracts/interfaces/DyDx/ICallee.sol')
+      assert.strictEqual(ICallee, DyDx.Interfaces.ICallee(solver))
+
+      const ISoloMargin = file('/contracts/interfaces/DyDx/ISoloMargin.sol')
+      assert.strictEqual(ISoloMargin, DyDx.Interfaces.ISoloMargin(solver))
+
+      const Account = file('/contracts/libraries/DyDx/Account.sol')
+      assert.strictEqual(Account, DyDx.Libraries.Account(solver))
+
+      const Actions = file('/contracts/libraries/DyDx/Actions.sol')
+      assert.strictEqual(Actions, DyDx.Libraries.Actions(solver))
+
+      const Types = file('/contracts/libraries/DyDx/Types.sol')
+      assert.strictEqual(Types, DyDx.Libraries.Types(solver))
+
+      const Flashloan = file('/contracts/Flashloan.sol')
+      assert.strictEqual(Flashloan, DyDx.Libraries.FlashloanBoilerplate(solver))
     })
 
     after(async () => {
@@ -302,4 +367,8 @@ describe(
   })
 
   afterEach(() => mock.restore())
+
+  after(() => {
+    rmSync(childWorkingDir, { recursive: true })
+  })
 })
