@@ -27,9 +27,7 @@ export const makeBaseDirs = async (dir: string): Promise<void[]> =>
     makeDir(pathResolve(dir + '/contracts/libraries')),
     makeDir(pathResolve(dir + '/lib/__abis__/abis')),
     makeDir(pathResolve(dir + '/migrations'))
-  ]).catch(e => {
-    throw e
-  })
+  ])
 
 /**
  * The type used in `ProtocolFileWriter.#addresses`
@@ -92,9 +90,7 @@ const WriteIERC20 = async (dir: string, solver: string) =>
     return makeFile(
       pathResolve(dir + '/contracts/interfaces/@OpenZeppelin/IERC20.sol'),
       OpenZeppelin.Interfaces.IERC20(solver)
-    ).catch(e => {
-      throw e
-    })
+    )
   })
 
 /**
@@ -380,9 +376,7 @@ export class ProtocolFileWriter {
     return makeFile(
       pathResolve(dir + '/lib/addresses.ts'),
       AddressesFile.trim()
-    ).catch(e => {
-      throw e
-    })
+    )
   }
 
   /**
@@ -411,9 +405,7 @@ export class ProtocolFileWriter {
       throw e
     })
 
-    return BancorWriter(dir, solver, net, ci).catch(e => {
-      throw e
-    })
+    return BancorWriter(dir, solver, net, ci)
   }
 
   /**
@@ -445,9 +437,7 @@ export class ProtocolFileWriter {
       throw e
     })
 
-    return DyDxWriter(dir, solver, net, ci).catch(e => {
-      throw e
-    })
+    return DyDxWriter(dir, solver, net, ci)
   }
 
   /**
@@ -478,9 +468,7 @@ export class ProtocolFileWriter {
       throw e
     })
 
-    return KyberWriter(dir, solver, net, ci).catch(e => {
-      throw e
-    })
+    return KyberWriter(dir, solver, net, ci)
   }
 
   /**
@@ -509,9 +497,7 @@ export class ProtocolFileWriter {
       throw e
     })
 
-    return OneInchWriter(dir, solver, net, ci).catch(e => {
-      throw e
-    })
+    return OneInchWriter(dir, solver, net, ci)
   }
 
   /**
@@ -536,9 +522,7 @@ export class ProtocolFileWriter {
         }
       )
 
-    return UniswapWriter(dir, solver, net, ci).catch(e => {
-      throw e
-    })
+    return UniswapWriter(dir, solver, net, ci)
   }
 
   public readonly protocols: ProtocolWriters = {

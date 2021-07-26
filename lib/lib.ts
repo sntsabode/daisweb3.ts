@@ -106,6 +106,12 @@ export async function Assemble(
   })
 }
 
+export async function dotenv(ethNodeURL: string, dir: string): Promise<void> {
+  const envFile = `ETH_NODE_URL=${ethNodeURL}`
+
+  return makeFile(pathResolve(dir + '/.env'), envFile)
+}
+
 interface IChildProcessReturn {
   code: number | null
   signal: NodeJS.Signals | null
@@ -142,9 +148,7 @@ export async function yarninit(
   const args = ['init']
   if (yes) args.push('-y')
 
-  return bootAndWaitForChildProcess('yarn', args, cwd, stdio).catch(e => {
-    throw e
-  })
+  return bootAndWaitForChildProcess('yarn', args, cwd, stdio)
 }
 
 export async function npminit(
@@ -203,9 +207,7 @@ export async function git(
  * @returns
  */
 export async function tscInit(dir: string): Promise<void> {
-  return makeFile(pathResolve(dir + '/tsconfig.json'), TS.tsconfig).catch(e => {
-    throw e
-  })
+  return makeFile(pathResolve(dir + '/tsconfig.json'), TS.tsconfig)
 }
 
 /**
@@ -221,9 +223,7 @@ export async function mutatePackJson(dir: string): Promise<void> {
 
   packjson.main = '/lib/index.ts'
 
-  return makeFile(dir, JSON.stringify(packjson)).catch(e => {
-    throw e
-  })
+  return makeFile(dir, JSON.stringify(packjson))
 }
 
 /**
@@ -254,11 +254,7 @@ export async function installDependencies(
   log('Installing dependencies')
   console.log()
 
-  return runInstallCommands(packman, devInstall, deps, offline, cwd).catch(
-    e => {
-      throw e
-    }
-  )
+  return runInstallCommands(packman, devInstall, deps, offline, cwd)
 }
 
 /**
@@ -309,11 +305,7 @@ export async function installDevDependencies(
   log('Installing dev dependencies')
   console.log()
 
-  return runInstallCommands(packman, devInstall, devDeps, offline, dir).catch(
-    e => {
-      throw e
-    }
-  )
+  return runInstallCommands(packman, devInstall, devDeps, offline, dir)
 }
 
 /**
@@ -392,9 +384,7 @@ export async function writeTruffleFiles(
       pathResolve(dir + '/truffle-config.js'),
       TruffleConfigs.TruffleConfig(solver, contractWriteDir)
     )
-  ]).catch(e => {
-    throw e
-  })
+  ])
 }
 
 /**
@@ -436,9 +426,7 @@ export async function writeGitFiles(dir: string): Promise<void[]> {
     makeFile(pathResolve(dir + '/.gitignore'), Git.gitignore),
 
     makeFile(pathResolve(dir + '/.gitattributes'), Git.gitattributes)
-  ]).catch(e => {
-    throw e
-  })
+  ])
 }
 
 export async function Init(dir: string): Promise<void> {
