@@ -391,13 +391,8 @@ export async function writeTruffleFiles(
  * @param ethNodeURL
  * @returns
  */
-export async function writeGanache(
-  dir: string
-): Promise<void> {
-  return makeFile(
-    pathResolve(dir + '/fork-chain.js'),
-    Ganache.ForkChain
-  )
+export async function writeGanache(dir: string): Promise<void> {
+  return makeFile(pathResolve(dir + '/fork-chain.js'), Ganache.ForkChain)
 }
 
 /**
