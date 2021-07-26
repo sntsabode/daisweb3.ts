@@ -3,5 +3,4 @@ dist
 yarn-error.log
 .nyc_output
 coverage
-a__test-work-dir__/yarn.lock
-a__test-work-dir__/package.json
+.local
