@@ -237,7 +237,7 @@ Defaults to yarn, fallbacks to npm if yarn fails.
 
 If false @truffle/hdwallet-provider is not installed so the truffle-config.js will need to be redone.
 
-* `ethNodeURL`: ***string*** The string going to be printed to an env variable in the `.env` file. This env variable is the variable that will be used in ganache's fork chain (if it was enabled) and as Web3's ***WebSocket*** provider (make sure it's '***wss://***' and ***not*** '***http://***')
+* `ethNodeURL`: ***string*** The string going to be printed to an env variable in the `.env` file. This env variable is the variable that will be used in ganache's fork chain (if it was enabled) and as Web3's ***WebSocket*** provider (make sure it's '***wss://***' and ***not*** '***http://***'/'***https://***'. If it's '***http://***'/'***https://***', please make sure WebSocket connections are enabled on that endpoint)
 
 * `contractImports` ***Array<IContractImport>***
 ```typescript
