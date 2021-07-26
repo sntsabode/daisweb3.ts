@@ -51,11 +51,6 @@ npm i -g
 ## Run tests
 
 ```sh
-mkdir .atestdir
-```
-Tests are a bit hacked together for the time being so please make sure to create a `.atestdir` directory in the `dais-web3.ts` directory before running the test suite.
-
-```sh
 yarn run test
 ```
 
