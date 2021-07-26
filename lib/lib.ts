@@ -99,7 +99,8 @@ export async function Assemble(
     daisconfig.omitTruffleHdWalletProvider,
     daisconfig.packman,
     daisconfig.addedDependencies,
-    offline
+    offline,
+    dir
   ).catch(e => {
     throw e
   })
@@ -122,7 +123,7 @@ export async function bootAndWaitForChildProcess(
   cwd?: string,
   stdio = 'inherit' as StdioOptions
 ): Promise<IChildProcessReturn> {
-  const child = spawn(cmd, args, { stdio, cwd: cwd })
+  const child = spawn(cmd, args, { stdio, cwd })
   return new Promise((resolve, reject) => {
     child.on('error', err => reject(err))
     child.on('close', (code, signal) => resolve({ code, signal }))
@@ -238,7 +239,8 @@ export async function installDependencies(
   omitTruffleHd: boolean,
   packman: 'yarn' | 'npm',
   addedDeps: string[],
-  offline?: boolean
+  offline?: boolean,
+  cwd?: string
 ): Promise<IChildProcessReturn> {
   const deps = ['web3', 'dotenv']
   const devInstall = false
@@ -252,7 +254,7 @@ export async function installDependencies(
   log('Installing dependencies')
   console.log()
 
-  return runInstallCommands(packman, devInstall, deps, offline).catch(e => {
+  return runInstallCommands(packman, devInstall, deps, offline, cwd).catch(e => {
     throw e
   })
 }
@@ -305,7 +307,7 @@ export async function installDevDependencies(
   log('Installing dev dependencies')
   console.log()
 
-  return runInstallCommands(packman, devInstall, devDeps, offline).catch(e => {
+  return runInstallCommands(packman, devInstall, devDeps, offline, dir).catch(e => {
     throw e
   })
 }
