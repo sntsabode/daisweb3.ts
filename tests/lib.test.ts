@@ -1,7 +1,7 @@
 import mock from 'mock-fs'
 import chai, { assert, expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import { mkdirSync, readdirSync, readFileSync, rmdirSync, rmSync } from 'fs'
+import { mkdirSync, readdirSync, readFileSync, rmSync } from 'fs'
 import { resolve } from 'path'
 import {
   Assemble,
