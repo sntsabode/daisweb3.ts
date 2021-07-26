@@ -29,6 +29,14 @@
 ## Installation
 ***assuming node.js is installed on your machine***
 
+### Install from NPM
+
+```Bash
+npm i daisweb3.ts -g
+```
+
+Recommend not using yarn global.
+
 ### Install from source
 
 ```Bash
@@ -206,7 +214,7 @@ If true `ganache-cli` will be installed and a `fork-mainnet.js` file will be wri
 ***(snippet)***
 ```javascript
 const server = ganache.server({
-  port: 9090,
+  port: 7545,
   default_balance_ether: 100,
   fork: new Web3.providers.WebsocketProvider("ETH_NODE_URL"),
   ws: true,
