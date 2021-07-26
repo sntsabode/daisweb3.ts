@@ -1,18 +1,32 @@
 {
   "name": "daisweb3.ts",
   "version": "0.1.0",
-  "description": "",
-  "main": "index.js",
+  "description": "A CLI that writes all the boilerplate necessary to interface with DeFi's most popular platforms.",
+  "main": "dist/index.cli.js",
+  "types": "dist/index.cli.d.ts",
   "scripts": {
     "test": "mocha -r ts-node/register tests/tests.test.ts --timeout 900000",
     "test:coverage": "nyc mocha -r ts-node/register tests/tests.test.ts --timeout 900000",
     "format": "prettier --write \"lib/**/*.ts\" \"lib/**/*.js\"",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint . --ext .ts",
+    "build": "tsc",
+    "prepare": "yarn run build",
+    "prepublishOnly": "yarn run test && yarn run lint",
+    "preversion": "yarn run lint",
+    "version": "yarn run format && git add -A lib",
+    "postversion": "git push && git push --tags"
   },
   "bin": {
     "daisweb3": "dist/index.cli.js"
   },
-  "keywords": [],
+  "keywords": [
+    "web3",
+    "ethereum",
+    "truffle",
+    "ganache",
+    "Ethereum",
+    "DeFi"
+  ],
   "author": "Sihle Masebuku <snts.abode@gmail.com>",
   "license": "MIT",
   "dependencies": {
