@@ -254,9 +254,11 @@ export async function installDependencies(
   log('Installing dependencies')
   console.log()
 
-  return runInstallCommands(packman, devInstall, deps, offline, cwd).catch(e => {
-    throw e
-  })
+  return runInstallCommands(packman, devInstall, deps, offline, cwd).catch(
+    e => {
+      throw e
+    }
+  )
 }
 
 /**
@@ -307,9 +309,11 @@ export async function installDevDependencies(
   log('Installing dev dependencies')
   console.log()
 
-  return runInstallCommands(packman, devInstall, devDeps, offline, dir).catch(e => {
-    throw e
-  })
+  return runInstallCommands(packman, devInstall, devDeps, offline, dir).catch(
+    e => {
+      throw e
+    }
+  )
 }
 
 /**

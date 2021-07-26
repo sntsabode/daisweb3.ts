@@ -15,14 +15,16 @@ export const KyberWriter = async (
   solver: string,
   net: SupportedNetwork | 'all',
   ci: IContractImport
-): Promise<IWriterReturn> => Imports[
-  (() => {
-    const pack = ci.pack.toUpperCase() as SupportedImport
-    if (!Imports[pack]) return 'ERROR'
-    return pack
-  })()
-](dir, solver, net, ci.abi, ci.omitNpmPack, ci.pack)
-  .catch(e => { throw e })
+): Promise<IWriterReturn> =>
+  Imports[
+    (() => {
+      const pack = ci.pack.toUpperCase() as SupportedImport
+      if (!Imports[pack]) return 'ERROR'
+      return pack
+    })()
+  ](dir, solver, net, ci.abi, ci.omitNpmPack, ci.pack).catch(e => {
+    throw e
+  })
 
 // prettier-ignore
 const IKyberNetworkProxy = async (
@@ -77,7 +79,7 @@ const IKyberNetworkProxy = async (
 
 const Imports: TImports<SupportedImport> = {
   IKYBERNETWORKPROXY: IKyberNetworkProxy,
-  ERROR: async (d,s,n,a,o, p) => {
+  ERROR: async (d, s, n, a, o, p) => {
     log.error('---', ...colors.red(p), 'is not a valid Kyber import')
     return {
       Addresses: [],

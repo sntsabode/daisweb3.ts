@@ -45,8 +45,7 @@ export function npmPackError(
   pack: string,
   protocol: SupportedProtocol
 ): string[] {
-  if (omitNpmPack)
-    return []
+  if (omitNpmPack) return []
 
   log.error(
     `${protocol} doesn't have an npm package relating to`,

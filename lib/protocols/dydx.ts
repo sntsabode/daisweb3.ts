@@ -120,7 +120,7 @@ const Flashloan = async (
 
 const Imports: TImports<SupportedImport> = {
   FLASHLOAN: Flashloan,
-  ERROR: async (d,s,n,a,o, p) => {
+  ERROR: async (d, s, n, a, o, p) => {
     log.error('---', ...colors.red(p), 'is not a valid DyDx import')
     return { Addresses: [], ABIs: [], Pack: [] }
   }
