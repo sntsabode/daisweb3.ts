@@ -3,3 +3,4 @@ dist
 tests
 migrations
 index.cli.js
+code.releaserc
