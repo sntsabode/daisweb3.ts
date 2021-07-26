@@ -92,6 +92,12 @@ daisweb3 <options>
 * `-o` or `--offline`: Runs ***yarn***/***npm*** add with the ***offline*** flag
 * `-c` or `--confirm`: Confirm the command
 
+#### Quick Start
+
+```
+daisweb3 -paicy
+```
+
 ***
 
 ## Implemented Protocols
