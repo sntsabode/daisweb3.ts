@@ -229,6 +229,7 @@ describe(
     'Should call the npminit function',
     async () => {
       mock.restore()
+      mkdirSync(childWorkingDir, { recursive: true })
       
       await npminit(true, childWorkingDir, 'ignore')
 
@@ -240,6 +241,7 @@ describe(
     'Should call the yarninit function',
     async () => {
       mock.restore()
+      mkdirSync(childWorkingDir, { recursive: true })
 
       await yarninit(true, childWorkingDir, 'ignore')
 
@@ -251,6 +253,7 @@ describe(
     'Should call the runInstallCommands function',
     async () => {
       mock.restore()
+      mkdirSync(childWorkingDir, { recursive: true })
 
       await runInstallCommands('npm', false, ['chalk'], false, childWorkingDir, 'ignore')
       const packagelockJSON = readFileSync(resolve(childWorkingDir + '/package-lock.json')).toString()
@@ -264,7 +267,7 @@ describe(
     'Should call the Assemble function',
     async () => {
       mock.restore()
-
+      
       const solver = '0.8.6'
 
       // Delete this and refactor ProtocolFileWriter to be able to
