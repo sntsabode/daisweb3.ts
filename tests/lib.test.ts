@@ -175,6 +175,9 @@ describe(
   it(
   'Should call the bootAndWaitForChildProcess function',
   async () => {
+    mock.restore()
+    mkdirSync(childWorkingDir, { recursive: true })
+
     const childpReturn = await bootAndWaitForChildProcess('ls', ['--l'], childWorkingDir)
 
     expect(childpReturn).to.have.property('code')
@@ -184,6 +187,9 @@ describe(
   it(
   'Should call the git function',
   async () => {
+    mock.restore()
+    mkdirSync(childWorkingDir, { recursive: true })
+
     // TODO: Make git folder assertions
 
     await git(false, childWorkingDir, childWorkingDir)
