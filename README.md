@@ -15,7 +15,7 @@
 
 <h2 align="center"> Dais-Web3 </h1>
 
- Dais-Web3, is part of a suite of Node.js/TypeScript development tools. It is a command line tool that writes the necessary boilerplate to interface with DeFi's more popular platforms using truffle as the Ethereum development environment and Solidity as the Smart Contract language.
+ Dais-Web3, is part of a suite of Node.js/TypeScript development tools. It is a command line tool that writes the necessary boilerplate to interface with DeFi's most popular platforms. Truffle is used as the Ethereum development environment and Solidity as the Smart Contract language.
 
 ## Prerequisites
 
@@ -81,6 +81,9 @@ Running this will run the `mocha` test suite using istanbul's `nyc` cli. Once th
 ## Usage
 
 ```sh
+mkdir dais-demo-project
+cd dais-demo-project
+
 daisweb3 <options>
 ```
 ### Options:
@@ -94,9 +97,49 @@ daisweb3 <options>
 
 #### Quick Start
 
-```
+```sh
 daisweb3 -paicy
 ```
+
+Running the daisweb3 command will generate the initial project structure and install the necessary dependencies:
+
+*Paths marked with a question mark are optional (configured in the ***`.daisconfig`*** file).*
+
+```
+dais-demo-project
+├── contracts
+│   ├── interfaces
+│   |   ├── ${protocol}?
+|   |   |   └── ${file}?
+│   ├── libraries
+|   |   └── ${protocol}?
+|   |       └── ${file}?
+│   └── Migrations.sol
+├── lib
+|   ├── __abis__?
+|   |   ├── abis?
+|   |   └── abis.ts?
+|   └── addresses.ts
+├── migrations
+|   └── 1_initial_migration.js
+├── node_modules
+├── .eslintignore?
+├── .eslintrc?
+├── .gitattributes?
+├── .gitignore?
+├── fork-chain.js?
+├── package.json
+├── truffle-config.js
+└── tsconfig.json
+```
+
+The generated boilerplate is as minimal as possible (for a truffle project). Once the installation is done boot the fork-chain (if any) and get to hacking!
+
+***
+
+## Philosophy
+
+Eventually... I got tired of scouring DeFi Docs and God forbid Git repositories to find ABIs and addresses. So I made daisweb3, an all in one place for all of that. 
 
 ***
 
@@ -104,11 +147,11 @@ daisweb3 -paicy
 
 | Protocol                                                                | ID          | Name          | Support                                                                  |
 | ----------------------------------------------------------------------- |:-----------:| ------------: | ------------------------------------------------------------------------ |
-| [<img src="./misc/img/dydx.png"/>](https://dydx.exchange/)              | **DYDX**    |  ***DyDx***         | <img src="https://img.shields.io/badge/DyDx-Supported-yellowgreen"/>     |
-| [<img src="./misc/img/uniswap-v2.png"/>](https://uniswap.org/)            | **UNISWAP** | ***Uniswap***       | <img src="https://img.shields.io/badge/Uniswap-Supported-yellowgreen"/>  |
-| [<img src="./misc/img/1inch.png"/>](https://app.1inch.io/)              | **ONEINCH** | ***1Inch Network*** | <img src="https://img.shields.io/badge/1Inch-Supported-yellowgreen"/>    |
-| [<img src="./misc/img/knc.png"/> ](https://kyber.network/about/kyber) | **KYBER**   | ***Kyber Network*** | <img src="https://img.shields.io/badge/Kyber-Supported-yellowgreen"/>    |
 | [<img src="./misc/img/bancor.png" />](https://bancor.network/)         | **BANCOR**  | ***Bancor***     | <img src="https://img.shields.io/badge/Bancor-Supported-yellowgreen"/>   |
+| [<img src="./misc/img/dydx.png"/>](https://dydx.exchange/)              | **DYDX**    |  ***DyDx***         | <img src="https://img.shields.io/badge/DyDx-Supported-yellowgreen"/>     |
+| [<img src="./misc/img/knc.png"/> ](https://kyber.network/about/kyber) | **KYBER**   | ***Kyber Network*** | <img src="https://img.shields.io/badge/Kyber-Supported-yellowgreen"/>    |
+| [<img src="./misc/img/1inch.png"/>](https://app.1inch.io/)              | **ONEINCH** | ***1Inch Network*** | <img src="https://img.shields.io/badge/1Inch-Supported-yellowgreen"/>    |
+| [<img src="./misc/img/uniswap-v2.png"/>](https://uniswap.org/)            | **UNISWAP** | ***Uniswap***       | <img src="https://img.shields.io/badge/Uniswap-Supported-yellowgreen"/>  |
 
 ***
 
