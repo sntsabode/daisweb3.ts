@@ -5,7 +5,7 @@ import { resolve as pathResolve } from 'path'
 import { DaisConfig } from './files/daisconfig'
 import { IDaisConfig } from './daisconfig'
 import { Truffle } from './files/contracts/__contracts__'
-import { spawn } from 'node:child_process'
+import { spawn } from 'child_process'
 import { Eslint, Ganache, Git, TS } from './files/configs/__configs__'
 import { Truffle as TruffleConfigs } from './files/configs/__configs__'
 import { readFileSync } from 'fs'
@@ -64,7 +64,9 @@ export async function Assemble(
     // prettier-ignore
     default:
       log.withbox.error(`
-        Unsupported package manager... running ${colors.yellow('npm --init')[0]}
+        Unsupported package manager...
+
+        running ${colors.yellow('npm --init')[0]}
       `)
       await npminit(yes).catch(e => {
         throw e
