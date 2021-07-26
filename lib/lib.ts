@@ -40,7 +40,7 @@ export async function Assemble(
 
   await Promise.all([
     writeTruffleFiles(dir, daisconfig.solversion, daisconfig.contractWriteDir),
-
+    dotenv(daisconfig.ethNodeURL, dir),
     tscInit(dir)
   ]).catch(e => {
     throw e
@@ -87,7 +87,6 @@ export async function Assemble(
     daisconfig.ganache,
     daisconfig.packman,
     daisconfig.eslint,
-    daisconfig.ethNodeURL,
     dir,
     offline
   ).catch(e => {
@@ -270,7 +269,6 @@ export async function installDevDependencies(
   ganache: boolean,
   packman: 'yarn' | 'npm',
   eslint: boolean,
-  ethNodeURL: string,
   dir: string,
   offline?: boolean
 ): Promise<IChildProcessReturn> {
@@ -278,7 +276,7 @@ export async function installDevDependencies(
   const devInstall = true
 
   if (ganache) {
-    await writeGanache(dir, ethNodeURL).catch(e => {
+    await writeGanache(dir).catch(e => {
       throw e
     })
 
@@ -394,12 +392,11 @@ export async function writeTruffleFiles(
  * @returns
  */
 export async function writeGanache(
-  dir: string,
-  ethNodeURL: string
+  dir: string
 ): Promise<void> {
   return makeFile(
     pathResolve(dir + '/fork-chain.js'),
-    Ganache.ForkChain(ethNodeURL)
+    Ganache.ForkChain
   )
 }
 
