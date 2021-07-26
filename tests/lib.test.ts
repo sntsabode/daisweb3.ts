@@ -53,6 +53,12 @@ describe(
     'atestdir': { }
   }))
 
+  before(() => {
+    try {
+      mkdirSync(resolve(childWorkingDir))
+    } catch (e) { }
+  })
+
   it(
   'Should call the Init function',
   async () => {
@@ -200,11 +206,11 @@ describe(
   'Should call the git function',
   async () => {
     mock.restore()
-    mkdirSync(childWorkingDir, { recursive: true })
-
     // TODO: Make git folder assertions
 
     await git(false, childWorkingDir, childWorkingDir)
+    // // // // // // // // // // // // // // // // //
+    await git(true, childWorkingDir, childWorkingDir)
 
     const gitignore = readFileSync(resolve(childWorkingDir + '/.gitignore')).toString()
     assert.isNotEmpty(gitignore)
@@ -213,7 +219,7 @@ describe(
     assert.isNotEmpty(gitattributes)
   })
 
-  // Commands are failing in Github Actions runner on windows-latest.
+  // 'yarn' and 'npm' commands are failing in Github Actions runner on windows-latest.
   if (process.platform !== 'win32') describe(
   'NPM and Dependencies Test Suite',
   () => {
