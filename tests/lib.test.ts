@@ -1,7 +1,7 @@
 import mock from 'mock-fs'
 import chai, { assert, expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import { mkdirSync, readdirSync, readFileSync, rmSync } from 'fs'
+import { mkdirSync, readdirSync, readFileSync, rmdirSync, rmSync } from 'fs'
 import { resolve } from 'path'
 import {
   Assemble,
@@ -29,6 +29,16 @@ chai.use(chaiAsPromised).should()
 
 const childWorkingDir = resolve(process.cwd() + '/atestdir')
 const file = (path: string) => readFileSync(childWorkingDir + path).toString()
+const local = (() => {
+  try {
+    readFileSync(resolve(process.cwd() + '/.local'))
+    return true
+  } catch (e) {
+    return false
+  }
+})()
+
+local ? console.log('Tests running locally') : console.log('Remote testing')
 
 describe(
 'Lib Test Suite',
@@ -207,10 +217,11 @@ describe(
   describe(
   'NPM and Dependencies Test Suite',
   () => {
-    before(() => {
+    before(async () => {
       mock.restore()
       // Clean slate
-      rmSync(childWorkingDir, { recursive: true })
+      if (local) rmSync(childWorkingDir, { recursive: true })      
+
       mkdirSync(childWorkingDir, { recursive: true })
     })
 
@@ -369,6 +380,6 @@ describe(
   afterEach(() => mock.restore())
 
   after(() => {
-    rmSync(childWorkingDir, { recursive: true })
+    if (local) rmSync(childWorkingDir, { recursive: true })
   })
 })
