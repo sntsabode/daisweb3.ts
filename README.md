@@ -181,7 +181,7 @@ pragma solidity ^{solversion};
 
 * `defaultNet`: *Network being used*
 
-This is the parameter the influences which Addresses are written into `./lib/addresses.ts`.
+This is the parameter that influences which Addresses are written into `./lib/addresses.ts`.
 Use `all` to print all addresses for MAINNET and supported test nets.
 
 ```typescript
