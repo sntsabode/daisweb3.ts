@@ -43,11 +43,11 @@ Recommend not using yarn global.
 ### Install from source
 
 ```Bash
-git clone https://github.com/sntsabode/dais-web3.ts
+git clone https://github.com/sntsabode/daisweb3.ts
 ```
 
 ```Bash
-cd dais-web3.ts
+cd daisweb3.ts
 ```
 
 ***assuming tsc command is available on your machine***
@@ -295,6 +295,7 @@ If false @truffle/hdwallet-provider is not installed so the truffle-config.js wi
 * `contractImports` ***Array<IContractImport>***
 ```typescript
 export type SupportedProtocol =
+  | 'AAVE'
   | 'BANCOR'
   | 'DYDX'
   | 'KYBER'
