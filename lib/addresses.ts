@@ -2,7 +2,7 @@
 
 import { SupportedProtocol } from './daisconfig'
 
-type Addresses_ = {
+type Addresses = {
   [protocol in SupportedProtocol]: {
     [key: string]: {
       MAINNET: string
@@ -12,7 +12,24 @@ type Addresses_ = {
   }
 }
 
-export const Addresses: Addresses_ = {
+export const Addresses = {
+  /**
+   * Aave contract addresses
+   */
+  AAVE: {
+    LendingPool: {
+      MAINNET: '0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9',
+      KOVAN: '0xE0fBa4Fc209b4948668006B2bE61711b7f465bAe',
+      ROPSTEN: ''
+    },
+
+    LendingPoolAddressesProvider: {
+      MAINNET: '0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5',
+      KOVAN: '0x88757f2f99175387aB4C6a4b3067c77A695b0349',
+      ROPSTEN: ''
+    }
+  },
+
   /**
    * Bancor contract addresses
    */
