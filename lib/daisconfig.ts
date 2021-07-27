@@ -25,6 +25,7 @@ export interface IDaisConfig {
 export type SupportedNetwork = 'MAINNET' | 'KOVAN' | 'ROPSTEN'
 
 export type SupportedProtocol =
+  | 'AAVE'
   | 'BANCOR'
   | 'DYDX'
   | 'KYBER'
@@ -32,6 +33,7 @@ export type SupportedProtocol =
   | 'UNISWAP'
 
 export const SupportedProtocolsArray: SupportedProtocol[] = [
+  'AAVE',
   'BANCOR',
   'DYDX',
   'KYBER',
