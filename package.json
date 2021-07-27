@@ -12,10 +12,7 @@
     "build": "tsc",
     "prepare": "yarn run build",
     "prepublishOnly": "yarn run test && yarn run lint",
-    "postpublish": "yarn run format && git pull && git add -A lib && git push && git push --tags",
-    "preversion": "yarn run lint",
-    "version": "yarn run format && git add -A lib",
-    "postversion": "git push && git push --tags"
+    "preversion": "yarn run lint"
   },
   "bin": {
     "daisweb3": "dist/index.cli.js"
