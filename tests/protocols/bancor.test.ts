@@ -71,6 +71,7 @@ describe(
     expect(res).to.have.property('Pack')
 
     assert.isEmpty(res.ABIs)
+    assert.isNotEmpty(res.Pack)
     assert.strictEqual(res.Addresses.length, 1)
 
     const IBancorNetwork = readFileSync('test-dir/contracts/interfaces/Bancor/IBancorNetwork.sol').toString()
