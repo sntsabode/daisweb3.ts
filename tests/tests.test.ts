@@ -4,6 +4,7 @@ describe(
   describe(
   'ProtocolWriter functions Test Suite',
   () => {
+    require('./protocols/aave.test')
     require('./protocols/bancor.test')
     require('./protocols/dydx.test')
     require('./protocols/kyber.test')
