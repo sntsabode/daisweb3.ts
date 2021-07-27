@@ -15,8 +15,6 @@ export type SupportedImport = 'IBANCORNETWORK'
 /**
  * Assumes the `Bancor` directory is already created in the
  * `contract/libraries` and `contract/interfaces` directories
- * @param pack package being imported
- * @param solver solidity version
  */
 export const BancorWriter = async (
   dir: string,
@@ -30,7 +28,6 @@ export const BancorWriter = async (
     return pack
   })()
 ](dir, solver, net, ci.abi, ci.omitNpmPack, ci.pack)
-  .catch(e => { throw e })
 
 // prettier-ignore
 const IBancorNetwork = async (
