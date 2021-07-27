@@ -15,6 +15,7 @@ import { resolve as pathResolve } from 'path'
 import { colors, log, makeDir, makeFile } from './utils'
 import { OneInchWriter } from './protocols/oneinch'
 import { UniswapWriter } from './protocols/uniswap'
+import { AaveWriter } from './protocols/aave'
 
 /**
  * Makes the directories the writer functions have to work in
@@ -63,9 +64,9 @@ type ProtocolWriterFunc = (
  * Type signature for `ProtocolFileWriter.protocols`
  */
 type ProtocolWriters = {
-  [protocol in SupportedProtocol]: ProtocolWriterFunc
+  readonly [protocol in SupportedProtocol]: ProtocolWriterFunc
 } & {
-  ERROR: ProtocolWriterFunc
+  readonly ERROR: ProtocolWriterFunc
 }
 
 /**
@@ -379,6 +380,26 @@ export class ProtocolFileWriter {
     )
   }
 
+  readonly #aave = async (
+    dir: string,
+    solver: string,
+    net: SupportedNetwork | 'all',
+    ci: IContractImport
+  ): Promise<IWriterReturn> => {
+    if (!this.#madeDirs.AAVE)
+      await Promise.all([
+        makeDir(pathResolve(dir + '/contracts/interfaces/Aave')),
+        makeDir(pathResolve(dir + '/contracts/libraries/Aave'))
+      ]).then(
+        () => (this.#madeDirs.AAVE = true),
+        e => {
+          throw e
+        }
+      )
+
+    return AaveWriter(dir, solver, net, ci)
+  }
+
   /**
    * Called for every BANCOR import
    * @param dir
@@ -526,6 +547,7 @@ export class ProtocolFileWriter {
   }
 
   public readonly protocols: ProtocolWriters = {
+    AAVE: this.#aave,
     BANCOR: this.#bancor,
     DYDX: this.#dydx,
     KYBER: this.#kyber,
