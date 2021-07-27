@@ -11,11 +11,14 @@
   <a href="https://github.com/prettier/prettier" target="_blank">
     <img alt="prettier" src="https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square"/>
   </a>
+  <a href="" target="_blank">
+    <img alt="linux test" src="https://github.com/sntsabode/dais-web3.js/actions/workflows/test.linux.yml/badge.svg">
+  </a>
 </p>
 
 <h2 align="center"> Dais-Web3 </h1>
 
- Dais-Web3, is part of a suite of Node.js/TypeScript development tools. It is a command line tool that writes the necessary boilerplate to interface with DeFi's most popular platforms. Truffle is used as the Ethereum development environment and Solidity as the Smart Contract language.
+Dais-Web3, is part of a suite of Node.js/TypeScript development tools. It is a command line tool that writes the necessary boilerplate to interface with DeFi's most popular platforms. Truffle is used as the Ethereum development environment and Solidity as the Smart Contract language.
 
 ## Prerequisites
 
@@ -231,7 +234,7 @@ pragma solidity ^{solversion};
 * `defaultNet`: *Network being used*
 
 This is the parameter that influences which Addresses are written into `./lib/addresses.ts`.
-Use `all` to print all addresses for MAINNET and supported test nets.
+Use `all` to print all the addresses for MAINNET and supported test nets.
 
 ```typescript
 export type SupportedNetwork =
