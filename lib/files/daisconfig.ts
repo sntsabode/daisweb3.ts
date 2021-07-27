@@ -13,6 +13,12 @@ export const DaisConfig = `
   "ethNodeURL": "wss://mainnet.infura.io/ws/v3/",
   "contractImports": [
     {
+      "protocol": "AAVE",
+      "pack": "ILendingPool",
+      "omitNpmPack": true,
+      "abi": true
+    },
+    {
       "protocol": "UNISWAP",
       "pack": "V2Router02",
       "omitNpmPack": true,
