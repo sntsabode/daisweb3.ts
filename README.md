@@ -150,6 +150,7 @@ Eventually... I got tired of scouring DeFi Docs and God forbid Git repositories 
 
 | Protocol                                                                | ID          | Name          | Support                                                                  |
 | ----------------------------------------------------------------------- |:-----------:| ------------: | ------------------------------------------------------------------------ |
+| [<img src="./misc/img/aave.png" />](https://bancor.network/)         | **AAVE**  | ***Aave***     | <img src="https://img.shields.io/badge/Aave-Supported-yellowgreen"/>   |
 | [<img src="./misc/img/bancor.png" />](https://bancor.network/)         | **BANCOR**  | ***Bancor***     | <img src="https://img.shields.io/badge/Bancor-Supported-yellowgreen"/>   |
 | [<img src="./misc/img/dydx.png"/>](https://dydx.exchange/)              | **DYDX**    |  ***DyDx***         | <img src="https://img.shields.io/badge/DyDx-Supported-yellowgreen"/>     |
 | [<img src="./misc/img/knc.png"/> ](https://kyber.network/about/kyber) | **KYBER**   | ***Kyber Network*** | <img src="https://img.shields.io/badge/Kyber-Supported-yellowgreen"/>    |
@@ -323,7 +324,141 @@ If true the protocol's npm package (if any) will be installed as a production de
 ***
 
 <h1 align="center"><em><strong>Protocols</em></strong></h1>
-<br><br/>
+
+<h1 align="center"><em><strong>AAVE</strong></em></h2>
+
+| Logo                                  | Support                                                               | Imports              |
+| :-----------------------------------: | :-------------------------------------------------------------------: | :------------------: |
+| <img src="./misc/img/aave.png"/>    | <img src="https://img.shields.io/badge/Aave-Supported-yellowgreen"/> | `ILendingPoolAddressesProvider`, `ILendingPool` |
+
+> Aave is a decentralised non-custodial liquidity protocol where users can participate as depositors or borrowers. Depositors provide liquidity to the market to earn a passive income, while borrowers are able to borrow in an over-collateralised (perpetually) or under-collateralised (one-block liquidity) fashion.
+
+for more see [Aave's docs](https://docs.aave.com/developers/)
+
+<br/>
+
+### *Supported Contract Imports*
+
+<br/>
+
+- <h3 align="center"><em>ILendingPool</em></h3>
+
+```json
+{
+  "protocol": "AAVE",
+  "pack": "ILendingPool",
+  "omitNpmPack": true,
+  "abi": false
+}
+```
+
+Writes `ILendingPoolAddressesProvider` and `ILendingPool` contract interfaces along with a `DataTypes` library.
+
+> The LendingPool contract is the main contract of the protocol. It exposes all the user-oriented actions that can be invoked using either Solidity or web3 libraries. 
+> The source code can be found on [Github here](https://github.com/aave/protocol-v2/blob/ice/mainnet-deployment-03-12-2020/contracts/protocol/lendingpool/LendingPool.sol).
+> If you need development support,  join the #developers channel on [the Aave community Discord server](https://discord.gg/CJm5Jt3).
+
+***(snippet)***
+```solidity
+// SPDX-License-Identifier: NO-LICENSE
+pragma solidity 0.6.12;
+pragma experimental ABIEncoderV2;
+
+import {ILendingPoolAddressesProvider} from './ILendingPoolAddressesProvider.sol';
+import {DataTypes} from '../../libraries/Aave/DataTypes.sol';
+
+interface ILendingPool {
+  ...
+
+  event FlashLoan(
+    address indexed target,
+    address indexed initiator,
+    address indexed asset,
+    uint256 amount,
+    uint256 premium,
+    uint16 referralCode
+  );
+
+  event LiquidationCall(
+    address indexed collateralAsset,
+    address indexed debtAsset,
+    address indexed user,
+    uint256 debtToCover,
+    uint256 liquidatedCollateralAmount,
+    address liquidator,
+    bool receiveAToken
+  );
+
+  ...
+
+  function liquidationCall(
+    address collateralAsset,
+    address debtAsset,
+    address user,
+    uint256 debtToCover,
+    bool receiveAToken
+  ) external;
+
+  ...
+
+  function flashLoan(
+    address receiverAddress,
+    address[] calldata assets,
+    uint256[] calldata amounts,
+    uint256[] calldata modes,
+    address onBehalfOf,
+    bytes calldata params,
+    uint16 referralCode
+  ) external;
+
+  ...
+}
+```
+
+<br/>
+
+- <h3 align="center"><em>ILendingPoolAddressesProvider</em></h3>
+
+```json
+{
+  "protocol": "AAVE",
+  "pack": "ILendingPoolAddressesProvider",
+  "omitNpmPack": true,
+  "abi": false
+}
+```
+
+Writes an `ILendingPoolAddressesProvider` contract interface.
+
+> Addresses register of the protocol for a particular market. This contract is immutable and the address will never change. Also see [Deployed Contracts](https://docs.aave.com/developers/deployed-contracts/deployed-contracts) section.
+
+***(snippet)***
+```solidity
+// SPDX-License-Identifier: NO-LICENSE
+pragma solidity ${solver};
+
+/**
+ * @title LendingPoolAddressesProvider contract
+ * @dev Main registry of addresses part of or connected to the protocol, including permissioned roles
+ * - Acting also as factory of proxies and admin of those, so with right to change its implementations
+ * - Owned by the Aave Governance
+ * @author Aave
+ **/
+interface ILendingPoolAddressesProvider {
+  event MarketIdSet(string newMarketId);
+  event LendingPoolUpdated(address indexed newAddress);
+ 
+  ...
+
+  function getLendingPool() external view returns (address);
+
+  ...
+}
+```
+
+<br/>
+
+***
 
 <h1 align="center"><em><strong>BANCOR</strong></em></h2>
 
@@ -331,13 +466,14 @@ If true the protocol's npm package (if any) will be installed as a production de
 | :-----------------------------------: | :-------------------------------------------------------------------: | :------------------: |
 | <img src="./misc/img/bancor.png"/>    | <img src="https://img.shields.io/badge/Banor-Supported-yellowgreen"/> | `IBancorNetwork`     |
 
-<br></br>
-
 > While many users benefit from the Bancor Network by using the Bancor App or a Bancor Widget, developers can also access Bancor's many features from their own smart contracts. The [***API reference***](https://docs.bancor.network/guides/interfacing-with-bancor-contracts) section provides a detailed look into the full functionality of each contract in the system. This section will provide a quick look into some more common features and should contain sufficient information for most use cases.
+
+<br></br>
 
 ### *Supported Contract Imports*
 
 <br></br>
+
 - <h3 align="center"><em>IBancorNetwork</em></h3>
 
 ```json
@@ -404,14 +540,11 @@ interface IContractRegistry {
 
 ***
 
-<br></br>
 <h1 align="center"><em><strong>DyDx</strong></em></h2>
 
 | Logo                             | Support                                                              | Imports                               |
 | :------------------------------: | :------------------------------------------------------------------: | :-----------------------------------: |
 | <img src="./misc/img/dydx.png"/> | <img src="https://img.shields.io/badge/DyDx-Supported-yellowgreen"/> | `Flashloan`                           |
-
-<br></br>
 
 ### *Supported Contract Imports*
 
@@ -495,14 +628,11 @@ contract FlashLoan is ICallee {
 
 ***
 
-<br><br/>
 <h1 align="center"><em><strong>KYBER</strong></em></h2>
 
 | Logo                                      | Support                                                               | Imports              |
 | :---------------------------------------: | :-------------------------------------------------------------------: | :------------------: |
 | <img src="./misc/img/kyber-network.png"/> | <img src="https://img.shields.io/badge/Kyber-Supported-yellowgreen"/> | `IKyberNetworkProxy` |
-
-<br></br>
 
 ### *Supported Contract Imports*
 
@@ -600,12 +730,11 @@ interface IKyberNetworkProxy {
 
 ***
 
-<br><br/>
 <h1 align="center"><em><strong>ONEINCH</strong></em></h2>
 
 | Logo                               | Support                                                                 | Imports                      |
 | :--------------------------------: | :---------------------------------------------------------------------: | :--------------------------: |
-| <img src="./misc/img/1inch2.png"/> | <img src="https://img.shields.io/badge/OneInch-Supported-yellowgreen"/> | `OneInch`, `OneInchMulti`    |
+| <img src="./misc/img/1inch2.png"/> | <img src="https://img.shields.io/badge/OneInch-Supported-yellowgreen"/> | `OneSplit`, `OneSplitMulti`    |
 
 > To use this service you have to call methods at [`OneSplitAudit`](https://github.com/CryptoManiacsZone/1inchProtocol/blob/master/contracts/OneSplitAudit.sol)
 >
@@ -630,12 +759,12 @@ interface IKyberNetworkProxy {
 ### *Supported Contract Imports*
 
 <br></br>
-- <h3 align="center"><em>OneInch</em></h3>
+- <h3 align="center"><em>OneSplit</em></h3>
 
 ```json
 {
   "protocol": "ONEINCH",
-  "pack": "OneInch",
+  "pack": "OneSplit",
   "omitNpmPack": true,
   "abi": true
 }
@@ -690,12 +819,13 @@ interface IOneSplit {
 ```
 
 <br></br>
-- <h3 align="center"><em>OneInchMulti</em></h3>
+
+- <h3 align="center"><em>OneSplitMulti</em></h3>
 
 ```json
 {
   "protocol": "ONEINCH",
-  "pack": "OneInchMulti",
+  "pack": "OneSplitMulti",
   "omitNpmPack": true,
   "abi": true
 }
@@ -738,13 +868,12 @@ interface IOneSplitMulti is IOneSplit {
 ***
 
 <br><br/>
+
 <h1 align="center"><em><strong>Uniswap</strong></em></h2>
 
 | Logo                                 | Support                                                                   | Imports                     | 
 :----------------------------------: | :-----------------------------------------------------------------------: | :---------------------------: |
 | <img src="./misc/img/uniswap-v2.png"/> | <img src="https://img.shields.io/badge/Uniswap-Supported-yellowgreen"/> | `V2Router`                  |
-
-<br></br>
 
 ### *Supported Contract Imports*
 
