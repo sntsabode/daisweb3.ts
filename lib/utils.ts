@@ -117,12 +117,12 @@ export namespace log {
 
   export const cyanbox = colors.cyan('╭', '─', '╮', '│', '╯', '─', '╰', '│')
 
-  export function withbox(templateLiteral: string): void {
+  export function withbox(templateLiteral: string, w = 50, h = 10): void {
     return console.log(
       new Box(
         {
-          w: 50,
-          h: 10,
+          w,
+          h,
           stringify: false,
           marks: {
             nw: cyanbox[0],
@@ -150,8 +150,8 @@ export namespace log {
       console.error(
         new Box(
           {
-            w: w,
-            h: h,
+            w,
+            h,
             stringify: false,
             marks: {
               nw: errorbox[0],
@@ -172,8 +172,8 @@ export namespace log {
       console.log(
         new Box(
           {
-            w: w,
-            h: h,
+            w,
+            h,
             stringify: false,
             marks: {
               nw: successbox[0],
