@@ -1,4 +1,7 @@
-export const DataTypes = (solver: string): string => `
+/** @format */
+
+export const DataTypes = (solver: string): string =>
+  `
 // SPDX-License-Identifier: NO-LICENSE
 pragma solidity ${solver};
 

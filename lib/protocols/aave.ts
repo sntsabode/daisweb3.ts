@@ -1,3 +1,5 @@
+/** @format */
+
 import { IContractImport, SupportedNetwork } from '../daisconfig'
 import { colors, log, makeFile } from '../utils'
 import { resolve as pathResolve } from 'path'
@@ -6,14 +8,12 @@ import { IAddressReturn, IWriterReturn, TImports } from './__imports__'
 import { Addresses } from '../addresses'
 import { NPMPacks } from '../npm-packs'
 
-export type SupportedImport =
-  | 'ILENDINGPOOL'
-  | 'ILENDINGPOOLADDRESSESPROVIDER'
+export type SupportedImport = 'ILENDINGPOOL' | 'ILENDINGPOOLADDRESSESPROVIDER'
 
 // prettier-ignore
 /**
  * Assumes the `Aave` directory is already created in the
- * `contract/libraries` and `contract/interfaces` directories 
+ * `contract/libraries` and `contract/interfaces` directories
  */
 export const AaveWriter = async (
   dir: string,
@@ -148,7 +148,7 @@ const ILendingPool = async (
 const Imports: TImports<SupportedImport> = {
   ILENDINGPOOLADDRESSESPROVIDER: ILendingPoolAddressesProvider,
   ILENDINGPOOL: ILendingPool,
-  ERROR: async (d,s,n,a,o, p) => {
+  ERROR: async (d, s, n, a, o, p) => {
     log.error('---', ...colors.red(p), 'is not a valid Aave import')
     return {
       Addresses: [],

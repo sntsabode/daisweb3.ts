@@ -1,3 +1,5 @@
+/** @format */
+
 export const ILendingPool = (solver: string): string => `
 // SPDX-License-Identifier: NO-LICENSE
 pragma solidity ${solver};
@@ -411,7 +413,8 @@ interface ILendingPool {
 }
 `
 
-export const ILendingPoolAddressesProvider = (solver: string): string => `
+export const ILendingPoolAddressesProvider = (solver: string): string =>
+  `
 // SPDX-License-Identifier: NO-LICENSE
 pragma solidity ${solver};
 

@@ -2,9 +2,7 @@
 
 export const NPMPacks = {
   AAVE: {
-    V2SDK: [
-      '@aave/protocol-v2'
-    ]
+    V2SDK: ['@aave/protocol-v2']
   },
 
   BANCOR: {
