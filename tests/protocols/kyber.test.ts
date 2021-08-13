@@ -1,3 +1,5 @@
+/** @format */
+
 import mock from 'mock-fs'
 import { KyberWriter } from '../../lib/protocols/kyber'
 import chai, { assert, expect } from 'chai'
@@ -10,16 +12,14 @@ chai.use(chaiAsPromised).should()
 const dir = 'test-dir'
 const solver = '0.8.6'
 
-describe(
-'KyberWriter Test Suite',
-() => {
-  beforeEach(() => mock({
-    'test-dir/contracts/interfaces/Kyber/': { }
-  }))
+describe('KyberWriter Test Suite', () => {
+  beforeEach(() =>
+    mock({
+      'test-dir/contracts/interfaces/Kyber/': {}
+    })
+  )
 
-  it(
-  'Should call the KyberWriter function with the "IKYBERNETWORKPROXY" option',
-  async () => {
+  it('Should call the KyberWriter function with the "IKYBERNETWORKPROXY" option', async () => {
     const res = await KyberWriter(dir, solver, 'all', {
       protocol: 'KYBER',
       pack: 'IKYBERNETWORKPROXY',
@@ -45,13 +45,16 @@ describe(
       assert.isString(address.NET)
     }
 
-    const IKyberNetworkProxy = readFileSync('test-dir/contracts/interfaces/Kyber/IKyberNetworkProxy.sol').toString()
-    assert.strictEqual(IKyberNetworkProxy, Kyber.Interfaces.IKyberNetworkProxy(solver))
+    const IKyberNetworkProxy = readFileSync(
+      'test-dir/contracts/interfaces/Kyber/IKyberNetworkProxy.sol'
+    ).toString()
+    assert.strictEqual(
+      IKyberNetworkProxy,
+      Kyber.Interfaces.IKyberNetworkProxy(solver)
+    )
   })
 
-  it(
-  'Should call the KyberWriter function with an erroneous input, whilst omitting the npmPack',
-  async () => {
+  it('Should call the KyberWriter function with an erroneous input, whilst omitting the npmPack', async () => {
     const res = await KyberWriter(dir, solver, 'KOVAN', {
       protocol: 'KYBER',
       pack: 'ibfuiewbgfiuw',
@@ -69,7 +72,9 @@ describe(
 
     await new Promise<void>((resolve, reject) => {
       try {
-        readFileSync('test-dir/contracts/interfaces/Kyber/IKyberNetworkProxy.sol').toString()
+        readFileSync(
+          'test-dir/contracts/interfaces/Kyber/IKyberNetworkProxy.sol'
+        ).toString()
         // Reject the promise if the file read... File shouldn't exist
         reject('Files exist')
       } catch (e) {

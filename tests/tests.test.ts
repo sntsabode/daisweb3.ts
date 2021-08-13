@@ -1,9 +1,7 @@
-describe(
-'daisweb3 Test Suite',
-() => {
-  describe(
-  'ProtocolWriter functions Test Suite',
-  () => {
+/** @format */
+
+describe('daisweb3 Test Suite', () => {
+  describe('ProtocolWriter functions Test Suite', () => {
     require('./protocols/aave.test')
     require('./protocols/bancor.test')
     require('./protocols/dydx.test')
@@ -12,15 +10,11 @@ describe(
     require('./protocols/uniswap.test')
   })
 
-  describe(
-  'ProtocolFileWriter Test Suite',
-  () => {
+  describe('ProtocolFileWriter Test Suite', () => {
     require('./protocol-writer.test')
   })
 
-  describe(
-  'Main lib Test Suite',
-  () => {
+  describe('Main lib Test Suite', () => {
     require('./lib.test')
   })
 })
