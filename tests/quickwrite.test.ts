@@ -1,9 +1,7 @@
-/**
- * /*
- * yarn run mocha -r ts-node/register tests/quickwrite.test.ts --timeout 900000
- *
- * @format
- */
+/** @format */
+/*
+yarn run mocha -r ts-node/register tests/quickwrite.test.ts --timeout 900000
+*/
 
 import mock from 'mock-fs'
 import { assert } from 'chai'
