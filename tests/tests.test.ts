@@ -14,6 +14,10 @@ describe('daisweb3 Test Suite', () => {
     require('./protocol-writer.test')
   })
 
+  describe('QuickWrite Test Suite', () => {
+    require('./quickwrite.test')
+  })
+
   describe('Main lib Test Suite', () => {
     require('./lib.test')
   })
