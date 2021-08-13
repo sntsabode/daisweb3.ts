@@ -72,7 +72,9 @@ async function quickWrite(
       abi,
       omitNpmPack
     }
-  )
+  ).catch(e => {
+    throw e
+  })
 
   await writeABIFiles(res.ABIs, dir).catch(e => {
     throw e
