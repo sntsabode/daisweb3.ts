@@ -1,5 +1,7 @@
 /** @format */
-
+/*
+yarn run mocha -r ts-node/register tests/protocols/dydx.test.ts --timeout 900000
+*/
 import mock from 'mock-fs'
 import { DyDxWriter } from '../../lib/protocols/dydx'
 import chai, { assert, expect } from 'chai'

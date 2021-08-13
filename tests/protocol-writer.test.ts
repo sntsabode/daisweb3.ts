@@ -1,5 +1,7 @@
 /** @format */
-
+/*
+yarn run mocha -r ts-node/register tests/protocol-writer.test.ts --timeout 900000
+*/
 import mock from 'mock-fs'
 import chai, { assert, expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'

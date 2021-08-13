@@ -1,5 +1,7 @@
 /** @format */
-
+/*
+yarn run mocha -r ts-node/register tests/protocols/aave.test.ts --timeout 900000
+*/
 import mock from 'mock-fs'
 import { AaveWriter } from '../../lib/protocols/aave'
 import chai, { assert, expect } from 'chai'

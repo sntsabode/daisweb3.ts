@@ -1,5 +1,7 @@
 /** @format */
-
+/*
+yarn run mocha -r ts-node/register tests/protocols/kyber.test.ts --timeout 900000
+*/
 import mock from 'mock-fs'
 import { KyberWriter } from '../../lib/protocols/kyber'
 import chai, { assert, expect } from 'chai'

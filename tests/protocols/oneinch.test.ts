@@ -1,5 +1,7 @@
 /** @format */
-
+/*
+yarn run mocha -r ts-node/register tests/protocols/oneinch.test.ts --timeout 900000
+*/
 import mock from 'mock-fs'
 import { OneInchWriter } from '../../lib/protocols/oneinch'
 import chai, { assert, expect } from 'chai'

@@ -1,5 +1,7 @@
 /** @format */
-
+/*
+yarn run mocha -r ts-node/register tests/protocols/uniswap.test.ts --timeout 900000
+*/
 import mock from 'mock-fs'
 import { UniswapWriter } from '../../lib/protocols/uniswap'
 import chai, { assert, expect } from 'chai'

@@ -1,5 +1,7 @@
 /** @format */
-
+/*
+yarn run mocha -r ts-node/register tests/protocols/bancor.test.ts --timeout 900000
+*/
 import mock from 'mock-fs'
 import { BancorWriter } from '../../lib/protocols/bancor'
 import chai, { assert, expect } from 'chai'
