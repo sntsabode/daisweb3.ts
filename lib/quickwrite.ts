@@ -10,18 +10,19 @@ import { readFile } from 'fs'
 
 export type SupportedArgsLength = '1' | '2' | '3' | '4' | '5' | '6'
 
-export async function QuickWrite(args: string[], dir: string): Promise<void> {
+export async function QuickWrite(args: string[], dir: string, childWorkingDir?: string): Promise<void> {
   checkArgsLength(args)
 
   const argsLength = args.length.toString() as SupportedArgsLength
 
-  return which[argsLength](args, dir)
+  return which[argsLength](args, dir, childWorkingDir)
 }
 
 const which: {
   [argslength in SupportedArgsLength]: (
     args: string[],
-    dir: string
+    dir: string,
+    childWorkingDir?: string
   ) => Promise<void> | void
 } = {
   '1': protocolOnly,
@@ -43,7 +44,7 @@ const supportedProtocols: {
   UNISWAP: ['V2ROUTER02']
 }
 
-async function quickWrite(args: string[], dir: string) {
+async function quickWrite(args: string[], dir: string, childWorkingDir?: string) {
   const protocol = assertProtocol(args[0])
   const pack = assertPack(protocol, args[1])
   const [abi, omitNpmPack, solver] = [
@@ -74,12 +75,12 @@ async function quickWrite(args: string[], dir: string) {
   })
 
   if (!packjsonExists && res.Pack.length > 0)
-    await npminit(true).catch(e => {
+    await npminit(true, childWorkingDir).catch(e => {
       throw e
     })
 
   if (res.Pack.length > 0)
-    await runInstall(res.Pack, dir).catch(e => {
+    await runInstall(res.Pack, dir, childWorkingDir).catch(e => {
       throw e
     })
 
@@ -87,13 +88,13 @@ async function quickWrite(args: string[], dir: string) {
   logAddresses(res.Addresses, protocol)
 }
 
-async function runInstall(deps: string[], dir: string) {
-  return runInstallCommands('yarn', false, deps).then(async yarn => {
+async function runInstall(deps: string[], dir: string, childWorkingDir?: string) {
+  return runInstallCommands('yarn', false, deps, false, childWorkingDir).then(async yarn => {
     // eslint-disable-next-line
     if (yarn!.code !== 0) {
       const yarnlockExists = await findFile(dir, 'yarn.lock')
       if (!yarnlockExists)
-        return runInstallCommands('npm', false, deps).catch(e => {
+        return runInstallCommands('npm', false, deps, false, childWorkingDir).catch(e => {
           throw e
         })
 
