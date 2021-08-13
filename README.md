@@ -142,6 +142,32 @@ The generated boilerplate is as minimal as possible (for a truffle project). Onc
 
 ***
 
+
+#### QuickWrite
+
+```sh
+daisweb3 <PROTOCOL> <PACK> <abi | false> <omitNpmPack | false> <solver> <Supported Network | all> -c
+```
+
+eg.
+
+```sh
+daisweb3 AAVE ILENDINGPOOL false omitNpmPack 0.8.6 MAINNET -c
+```
+
+***(Arguments have to be in the specified order)***
+
+##### Args
+
+* `PROTOCOL`: Any supported protocol.
+* `PACK`: Any supported import for the entered protocol.
+* `abi`: Any value other than false will be treated as true. If false **isn't** entered, the imported contract's abis are writted into a `lib/__abis__/abis/` directory in the directory the daisweb3 command was called from.
+* `omitNpmPack`: Any value other than false will be treated as true. If false is entered the protocol's NPM packages are installed into the directory the daisweb3 command was called from.
+* `solver`: Solidity version going to entered into the contract files.
+* `Supported Network`: Any supported network or all. This is used to determine which contract addresses to return.
+
+***
+
 ## Philosophy
 
 Eventually... I got tired of scouring DeFi Docs and God forbid Git repositories to find ABIs and addresses. So I made daisweb3, an all in one place for all of that. 
