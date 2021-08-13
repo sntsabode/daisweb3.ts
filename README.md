@@ -161,7 +161,7 @@ daisweb3 AAVE ILENDINGPOOL false omitNpmPack 0.8.6 MAINNET -c
 
 * `PROTOCOL`: Any supported protocol.
 * `PACK`: Any supported import for the entered protocol.
-* `abi`: Any value other than false will be treated as true. If false **isn't** entered, the imported contract's abis are writted into a `lib/__abis__/abis/` directory in the directory the daisweb3 command was called from.
+* `abi`: Any value other than false will be treated as true. If false **isn't** entered, the imported contract's abis are written into a `lib/__abis__/abis/` directory in the directory the daisweb3 command was called from.
 * `omitNpmPack`: Any value other than false will be treated as true. If false is entered the protocol's NPM packages are installed into the directory the daisweb3 command was called from.
 * `solver`: Solidity version going to entered into the contract files.
 * `Supported Network`: Any supported network or all. This is used to determine which contract addresses to return.
