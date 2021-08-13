@@ -7,7 +7,7 @@
   "scripts": {
     "test": "mocha -r ts-node/register tests/tests.test.ts --timeout 900000",
     "test:coverage": "nyc mocha -r ts-node/register tests/tests.test.ts --timeout 900000",
-    "format": "prettier --write \"lib/**/*.ts\" \"lib/**/*.js\"",
+    "format": "prettier --write \"lib/**/*.ts\" \"lib/**/*.js\" \"tests/**/*.ts\"",
     "lint": "eslint . --ext .ts",
     "build": "tsc",
     "prepare": "yarn run build",
