@@ -10,7 +10,11 @@ import { readFile } from 'fs'
 
 export type SupportedArgsLength = '1' | '2' | '3' | '4' | '5' | '6'
 
-export async function QuickWrite(args: string[], dir: string, childWorkingDir?: string): Promise<void> {
+export async function QuickWrite(
+  args: string[],
+  dir: string,
+  childWorkingDir?: string
+): Promise<void> {
   checkArgsLength(args)
 
   const argsLength = args.length.toString() as SupportedArgsLength
@@ -44,7 +48,11 @@ const supportedProtocols: {
   UNISWAP: ['V2ROUTER02']
 }
 
-async function quickWrite(args: string[], dir: string, childWorkingDir?: string) {
+async function quickWrite(
+  args: string[],
+  dir: string,
+  childWorkingDir?: string
+) {
   const protocol = assertProtocol(args[0])
   const pack = assertPack(protocol, args[1])
   const [abi, omitNpmPack, solver] = [
@@ -88,21 +96,37 @@ async function quickWrite(args: string[], dir: string, childWorkingDir?: string)
   logAddresses(res.Addresses, protocol)
 }
 
-async function runInstall(deps: string[], dir: string, childWorkingDir?: string) {
-  return runInstallCommands('yarn', false, deps, false, childWorkingDir).then(async yarn => {
-    // eslint-disable-next-line
-    if (yarn!.code !== 0) {
-      const yarnlockExists = await findFile(dir, 'yarn.lock')
-      if (!yarnlockExists)
-        return runInstallCommands('npm', false, deps, false, childWorkingDir).catch(e => {
-          throw e
-        })
+async function runInstall(
+  deps: string[],
+  dir: string,
+  childWorkingDir?: string
+) {
+  return runInstallCommands('yarn', false, deps, false, childWorkingDir).then(
+    async yarn => {
+      // eslint-disable-next-line
+      if (yarn!.code !== 0) {
+        const yarnlockExists = await findFile(dir, 'yarn.lock')
+        if (!yarnlockExists)
+          return runInstallCommands(
+            'npm',
+            false,
+            deps,
+            false,
+            childWorkingDir
+          ).catch(e => {
+            throw e
+          })
 
-      log.warning('Found', colors.cyan('yarn.lock')[0], 'file. Aborting npm i')
+        log.warning(
+          'Found',
+          colors.cyan('yarn.lock')[0],
+          'file. Aborting npm i'
+        )
+      }
+
+      return yarn
     }
-
-    return yarn
-  })
+  )
 }
 
 async function findFile(dir: string, file: string) {
