@@ -1,12 +1,12 @@
 /** @format */
 
-import { colors, log, makeFile } from './utils'
+import { colors, log, makeDir, makeFile } from './utils'
 import { resolve as pathResolve } from 'path'
 import { DaisConfig } from './files/daisconfig'
 import { IDaisConfig } from './daisconfig'
 import { Truffle } from './files/contracts/__contracts__'
 import { spawn } from 'child_process'
-import { Eslint, Ganache, Git, TS } from './files/configs/__configs__'
+import { Eslint, Ganache, Git, TS, Mocha } from './files/configs/__configs__'
 import { Truffle as TruffleConfigs } from './files/configs/__configs__'
 import { readFileSync } from 'fs'
 import { ProtocolFileWriter } from './protocol-writer'
@@ -74,7 +74,7 @@ export async function Assemble(
     break;
   }
 
-  await mutatePackJson(dir).catch(e => {
+  await mutatePackJson(dir, daisconfig.mocha).catch(e => {
     throw e
   })
 
@@ -87,6 +87,7 @@ export async function Assemble(
     daisconfig.ganache,
     daisconfig.packman,
     daisconfig.eslint,
+    daisconfig.mocha,
     dir,
     offline
   ).catch(e => {
@@ -201,7 +202,6 @@ export async function git(
 }
 
 /**
- *
  * @param dir
  * @returns
  */
@@ -210,15 +210,17 @@ export async function tscInit(dir: string): Promise<void> {
 }
 
 /**
- *
  * @param dir
  * @returns
  */
-export async function mutatePackJson(dir: string): Promise<void> {
+export async function mutatePackJson(dir: string, mocha: boolean): Promise<void> {
   dir = pathResolve(dir + '/package.json')
   const packjson = JSON.parse(readFileSync(dir).toString())
   if (packjson.scripts) packjson.scripts.tsc = 'tsc'
   else packjson.scripts = { tsc: 'tsc' }
+
+  if (mocha)
+    packjson.scripts.test = 'mocha -r ts-node/register tests/tests.test.ts --timeout 900000'
 
   packjson.main = '/lib/index.ts'
 
@@ -269,24 +271,23 @@ export async function installDevDependencies(
   ganache: boolean,
   packman: 'yarn' | 'npm',
   eslint: boolean,
+  mocha: boolean,
   dir: string,
   offline?: boolean
 ): Promise<IChildProcessReturn> {
+  const fileProms = <(() => Promise<void>)[]>[]
   const devDeps = ['typescript', 'ts-node', '@types/node']
   const devInstall = true
 
   if (ganache) {
-    await writeGanache(dir).catch(e => {
-      throw e
-    })
-
+    fileProms.push(() => writeGanache(dir))
     devDeps.push('ganache-cli')
   }
 
   if (eslint) {
-    await writeEslintFiles(dir).catch(e => {
-      throw e
-    })
+    fileProms.push(
+      () => writeEslintFiles(dir)as unknown as Promise<void>
+    )
 
     devDeps.push(
       ...[
@@ -297,11 +298,35 @@ export async function installDevDependencies(
     )
   }
 
+  if (mocha) {
+    fileProms.push(
+      () => makeDir(pathResolve(dir + '/tests'))
+        .then(
+          () => makeFile(pathResolve(
+            dir + '/tests/tests.test.ts'
+          ), Mocha.TestScaffold)
+        )
+    )
+
+    devDeps.push(
+      ...[
+        'mocha',
+        '@types/mocha',
+        'chai',
+        '@types/chai'
+      ]
+    )
+  }
+
   devDeps.push(...addedDevDeps)
 
   console.log()
   log('Installing dev dependencies')
   console.log()
+
+  // prettier-ignore
+  await Promise.all(fileProms.map(func => func()))
+    .catch(e => { throw e })
 
   return runInstallCommands(packman, devInstall, devDeps, offline, dir)
 }
@@ -325,33 +350,25 @@ export async function runInstallCommands(
   if (dev) args.push('-D')
   if (offline) args.push('--offline')
 
-  switch (packman) {
-    case 'yarn':
-      return bootAndWaitForChildProcess('yarn', args, cwd, stdio).catch(e => {
-        throw e
-      })
+  if (packman === 'yarn')
+    return bootAndWaitForChildProcess('yarn', args, cwd, stdio)
 
-    case 'npm':
-      return bootAndWaitForChildProcess('npm', args, cwd, stdio).catch(e => {
-        throw e
-      })
+  else if (packman === 'npm')
+    return bootAndWaitForChildProcess('npm', args, cwd, stdio)
 
-    default:
-      log.error('Unsupported package manager')
-      log.warning('Attempting yarn add')
-      return bootAndWaitForChildProcess('yarn', args, cwd, stdio).then(
-        val => val,
-        async () => {
-          log.error(...colors.red('yarn add'), 'failed.')
-          log.warning('Attempting npm i')
+  else {
+    log.error('Unsupported package manager')
+    log.warning('Attempting yarn add')
 
-          return bootAndWaitForChildProcess('npm', args, cwd, stdio).catch(
-            e => {
-              throw e
-            }
-          )
-        }
-      )
+    // prettier-ignore
+    const yarn = await bootAndWaitForChildProcess('yarn', args, cwd, stdio)
+      .catch(e => { throw e })
+
+    // yarn failed. attempting npm
+    if (yarn.code !== 0)
+      return bootAndWaitForChildProcess('npm', args, cwd, stdio)
+
+    return yarn
   }
 }
 

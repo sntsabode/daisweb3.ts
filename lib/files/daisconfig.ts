@@ -8,6 +8,7 @@ export const DaisConfig = `
   "git": true,
   "contractWriteDir": "/lib/__abis__/artifacts",
   "ganache": true,
+  "mocha": true,
   "packman": "yarn",
   "omitTruffleHdWalletProvider": false,
   "ethNodeURL": "wss://mainnet.infura.io/ws/v3/",
