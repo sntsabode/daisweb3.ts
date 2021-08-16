@@ -1,12 +1,15 @@
 /** @format */
 
-import * as TruffleConfigs from './truffle'
-export { TruffleConfigs as Truffle }
-import * as EslintConfigs from './eslint'
-export { EslintConfigs as Eslint }
-import * as GitConfigs from './git'
-export { GitConfigs as Git }
-import * as TSConfigs from './typescript'
-export { TSConfigs as TS }
-import * as GanacheConfigs from './ganache'
-export { GanacheConfigs as Ganache }
+import * as Truffle from './truffle'
+import * as Eslint from './eslint'
+import * as Ganache from './ganache'
+import * as Mocha from './mocha'
+import * as Git from './git'
+import * as TS from './typescript'
+
+export { Truffle }
+export { Eslint }
+export { Git }
+export { TS }
+export { Ganache }
+export { Mocha }
