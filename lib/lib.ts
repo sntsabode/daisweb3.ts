@@ -213,14 +213,18 @@ export async function tscInit(dir: string): Promise<void> {
  * @param dir
  * @returns
  */
-export async function mutatePackJson(dir: string, mocha: boolean): Promise<void> {
+export async function mutatePackJson(
+  dir: string,
+  mocha: boolean
+): Promise<void> {
   dir = pathResolve(dir + '/package.json')
   const packjson = JSON.parse(readFileSync(dir).toString())
   if (packjson.scripts) packjson.scripts.tsc = 'tsc'
   else packjson.scripts = { tsc: 'tsc' }
 
   if (mocha)
-    packjson.scripts.test = 'mocha -r ts-node/register tests/tests.test.ts --timeout 900000'
+    packjson.scripts.test =
+      'mocha -r ts-node/register tests/tests.test.ts --timeout 900000'
 
   packjson.main = '/lib/index.ts'
 
@@ -285,9 +289,7 @@ export async function installDevDependencies(
   }
 
   if (eslint) {
-    fileProms.push(
-      () => writeEslintFiles(dir)as unknown as Promise<void>
-    )
+    fileProms.push(() => writeEslintFiles(dir) as unknown as Promise<void>)
 
     devDeps.push(
       ...[
@@ -299,23 +301,13 @@ export async function installDevDependencies(
   }
 
   if (mocha) {
-    fileProms.push(
-      () => makeDir(pathResolve(dir + '/tests'))
-        .then(
-          () => makeFile(pathResolve(
-            dir + '/tests/tests.test.ts'
-          ), Mocha.TestScaffold)
-        )
+    fileProms.push(() =>
+      makeDir(pathResolve(dir + '/tests')).then(() =>
+        makeFile(pathResolve(dir + '/tests/tests.test.ts'), Mocha.TestScaffold)
+      )
     )
 
-    devDeps.push(
-      ...[
-        'mocha',
-        '@types/mocha',
-        'chai',
-        '@types/chai'
-      ]
-    )
+    devDeps.push(...['mocha', '@types/mocha', 'chai', '@types/chai'])
   }
 
   devDeps.push(...addedDevDeps)
@@ -352,10 +344,8 @@ export async function runInstallCommands(
 
   if (packman === 'yarn')
     return bootAndWaitForChildProcess('yarn', args, cwd, stdio)
-
   else if (packman === 'npm')
     return bootAndWaitForChildProcess('npm', args, cwd, stdio)
-
   else {
     log.error('Unsupported package manager')
     log.warning('Attempting yarn add')
@@ -373,7 +363,6 @@ export async function runInstallCommands(
 }
 
 /**
- *
  * @param dir
  * @param solver
  * @param contractWriteDir
@@ -403,7 +392,6 @@ export async function writeTruffleFiles(
 }
 
 /**
- *
  * @param dir
  * @param ethNodeURL
  * @returns
@@ -413,7 +401,6 @@ export async function writeGanache(dir: string): Promise<void> {
 }
 
 /**
- *
  * @param dir
  * @returns
  */
@@ -426,7 +413,6 @@ export async function writeEslintFiles(dir: string): Promise<void[]> {
 }
 
 /**
- *
  * @param dir
  * @returns
  */
