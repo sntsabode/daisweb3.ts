@@ -198,6 +198,7 @@ Eventually... I got tired of scouring DeFi Docs and God forbid Git repositories 
   "git": true,
   "contractWriteDir": "/lib/__abis__/artifacts",
   "ganache": true,
+  "mocha": true,
   "packman": "yarn",
   "omitTruffleHdWalletProvider": false,
   "ethNodeURL": "wss://mainnet.infura.io/ws/v3/INFURA_URL",
@@ -309,6 +310,8 @@ const PORT = 7545
 
 server.listen(PORT, (err, blockchain) => { })
 ```
+
+* `mocha` ***bool*** *Whether or not mocha and chai are installed as dev-deps*.
 
 * `packman` ***yarn || npm*** *The package manager going to be used to install said dependencies*
 
