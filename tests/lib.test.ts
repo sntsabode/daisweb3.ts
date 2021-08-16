@@ -184,7 +184,7 @@ describe('Lib Test Suite', () => {
     ).toString()
     assert.strictEqual(packjsonBefore, '{}')
 
-    await mutatePackJson('test-dir')
+    await mutatePackJson('test-dir', true)
 
     const packjsonAfter = JSON.parse(
       readFileSync(resolve('test-dir/package.json')).toString()
@@ -308,6 +308,7 @@ describe('Lib Test Suite', () => {
             git: false,
             contractWriteDir: '/contract-write-dir',
             ganache: false,
+            mocha: true,
             packman: 'yarn',
             omitTruffleHdWalletProvider: true,
             ethNodeURL: 'ETH_NODE_URL',
