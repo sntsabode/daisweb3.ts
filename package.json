@@ -1,6 +1,6 @@
 {
   "name": "daisweb3.ts",
-  "version": "0.3.5",
+  "version": "0.4.0",
   "description": "A CLI that writes all the boilerplate necessary to interface with DeFi's most popular platforms.",
   "main": "dist/index.cli.js",
   "types": "dist/index.cli.d.ts",
