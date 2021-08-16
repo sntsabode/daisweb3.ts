@@ -14,6 +14,7 @@ export interface IDaisConfig {
   readonly git: boolean
   readonly contractWriteDir: string
   readonly ganache: boolean
+  readonly mocha: boolean
   readonly packman: 'yarn' | 'npm'
   readonly omitTruffleHdWalletProvider: boolean
   readonly ethNodeURL: string
